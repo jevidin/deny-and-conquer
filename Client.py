@@ -11,4 +11,5 @@ msg = "Hello"
 s.send(msg.encode('utf-8'))
 rply = s.recv(BUFFER).decode('utf-8')
 print(rply)
+rply = s.recv(BUFFER).decode('utf-8')
 s.close()
