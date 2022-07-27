@@ -1,14 +1,37 @@
 import socket
+import threading
 
-PORT = 9999
+print("Starting client...")
+
 SERVER_IP = socket.gethostname()
+PORT = 9999
 BUFFER = 128
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((SERVER_IP, PORT))
+LISTENING = True
 
-msg = "Hello"
-s.send(msg.encode('utf-8'))
-rply = s.recv(BUFFER).decode('utf-8')
-print(rply)
-s.close()
+def startListener(s):
+    global LISTENING
+    while LISTENING == True:
+        receive = s.recv(BUFFER).decode('utf-8')
+        arg = receive.split(' ')
+        if (arg[0] == "STOP"):
+            LISTENING = False
+            s.close()
+            break
+        else:
+            print(receive)
+
+def startInput(s):
+    global LISTENING
+    while LISTENING == True:
+        msg = input()
+        s.send(msg.encode('utf-8'))
+
+def connect():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((SERVER_IP, PORT))
+
+    threading.Thread(target=startListener, args=(s,)).start()
+    threading.Thread(target=startInput, args=(s,)).start()
+
+connect()
