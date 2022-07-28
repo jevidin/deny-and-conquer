@@ -22,17 +22,11 @@ def startServer():
     SERVER.listen(4)
 
     while CURR_CLIENTS < MAX_CLIENTS:
-        #Blocking line
         c, addr = SERVER.accept()
         CLIENTS[c.fileno()] = c
         LISTENING[c.fileno()] = True
         threading.Thread(target=startListener, args=(c,)).start()
         CURR_CLIENTS += 1
-
-        #receive = c.recv(BUFFER).decode('utf-8')
-        #print("Client " + str(CURR_CLIENTS) + ": " + receive)
-
-        #broadcast("Hello")
 
 def startListener(c):
     global SERVER, LISTENING, CURR_CLIENTS
