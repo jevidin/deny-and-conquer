@@ -13,6 +13,8 @@ CURR_CLIENTS = 0
 CLIENTS = {}
 LISTENING = {}
 
+COLORS = ["RED", "BLUE", "GREEN", "YELLOW"]
+PLAYER_COLOR = {}
 
 def startServer(ip, port):
     global SERVER, LISTENING, CURR_CLIENTS
@@ -25,40 +27,80 @@ def startServer(ip, port):
     print(f"[SERVER LIVE] listening on {ip} and port {port}")
 
     while CURR_CLIENTS < MAX_CLIENTS:
-        # Blocking line
+        # Blocking line for accepting client connection request
         client, addr = SERVER.accept()
+
+        # Assign client a color
+        color = COLORS.pop(0)
+        PLAYER_COLOR[client.fileno()] = color
+        msg = color
+        client.send(msg.encode('utf-8'))
+
+        # Store reference to each client and whether they are listening
         CLIENTS[client.fileno()] = client
         LISTENING[client.fileno()] = True
-        threading.Thread(target=startListener, args=(client,)).start()
-        CURR_CLIENTS += 1
 
-        # receive = c.recv(BUFFER).decode('utf-8')
-        # print("Client " + str(CURR_CLIENTS) + ": " + receive)
-        # broadcast("Hello")
+        # Have a listener for each client run on separate threads
+        threading.Thread(target=startListener, args=(client,)).start()
+
+        # Increment CURR_CLIENTS
+        CURR_CLIENTS += 1
 
         # TODO: close clients, decrement curr_client, remove from CLIENTS{}, stop respective client thread (if needed)
 
-
-def startListener(c):
+    
+def startListener(client):
     global SERVER, LISTENING, CURR_CLIENTS
-    while LISTENING[c.fileno()]:
-        receive = c.recv(BUFFER).decode('utf-8')
+    while LISTENING[client.fileno()]:
+        receive = client.recv(BUFFER).decode('utf-8')
         arg = receive.split(' ')
 
         if (arg[0] == "STOP"):
+            # Will cause exception messages
             msg = "STOP"
-            c.send(msg.encode('utf-8'))
-            c.close()
+            LISTENING[client.fileno()] = False
+            client.send(msg.encode('utf-8'))
+            for client in CLIENTS.values():
+                client.close()
+            SERVER.close()
+            break
+        elif (arg[0] == "DISCONNECT"):
+            # User disconnects
+            msg = "DISCONNECT"
+            CURR_CLIENTS -= 1
+            COLORS.append(PLAYER_COLOR[client.fileno()])
+            LISTENING[client.fileno()] = False
+            client.send(msg.encode('utf-8'))
+            client.close()
             break
         elif (arg[0] == "PRINT"):
+            # Test function
             for data in arg:
                 if (data != "PRINT"):
                     print(data)
         elif (arg[0] == "PING"):
+            # Test function
             msg = "PONG!"
-            c.send(msg.encode('utf-8'))
-
-    SERVER.close()
+            client.send(msg.encode('utf-8'))
+        elif (arg[0] == "LOCK"):
+            # Client tells server that square at (x,y) is locked
+            # LOCK x y
+            x = arg[1]
+            y = arg[2]
+            # ...code for locking square at (x,y) in game state
+        elif (arg[0] == "UNLOCK"):
+            # Client tells server that square at (x,y) is unlocked
+            # UNLOCK x y
+            x = arg[1]
+            y = arg[2]
+            # ...code for unlocking square at (x,y) in game state
+        elif (arg[0] == "CLAIM"):
+            # Client tells server that they claim the square at (x,y)
+            # CLAIM x y
+            x = arg[1]
+            y = arg[2]
+            # ...code for claiming square at (x,y) in game state
+            # check for whether client has claimed 50% of the square should be done on client side(?)
 
 
 def broadcast(msg):
