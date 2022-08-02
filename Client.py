@@ -1,22 +1,28 @@
 import socket
 import argparse
 import threading
+import Client_GUI
 
 # Defaults
 SERVER_IP = socket.gethostname()
 PORT = 9999
 BUFFER = 128
+GUI = Client_GUI
 
 COLOR = None
 LISTENING = True
 
+def fillerFunc():
+    print("blah")
+
 def startListener(s):
-    global LISTENING
+    global LISTENING, GUI
 
     while LISTENING:
         receive = s.recv(BUFFER).decode('utf-8')
         arg = receive.split(' ')
         if (arg[0] == "DISCONNECT" or arg[0] == "STOP"):
+            # Stop listener thread
             print("Press enter again to stop...")
             LISTENING = False
             break
@@ -26,12 +32,14 @@ def startListener(s):
             x = arg[1]
             y = arg[2]
             # ...code here for client to lock square at (x,y)
+            # ...call functions in Client_GUI.py to manipulate GUI
         elif (arg[0] == "UNLOCK"):
             # Server tells client that square at (x,y) is unlocked
             # UNLOCK x y
             x = arg[1]
             y = arg[2]
             # ...code here for client to unlock square at (x,y)
+            # ...call functions in Client_GUI.py to manipulate GUI
         elif (arg[0] == "CLAIM"):
             # Server tells client that square at (x,y) is claimed by (color)
             # CLAIM x y color
@@ -39,6 +47,20 @@ def startListener(s):
             y = arg[2]
             color = arg[3]
             # ...code here for client to lock square at (x,y) and color it
+            # ...call functions in Client_GUI.py to manipulate GUI
+        elif (arg[0] == "START"):
+            # Server tells client that game has started
+            fillerFunc()
+            # ...call functions in Client_GUI.py to manipulate GUI
+        elif (arg[0] == "RESTART"):
+            # Server tells client to restart game (reset GUI)
+            fillerFunc()
+            # ...call functions in Client_GUI.py to manipulate GUI
+        elif (arg[0] == "END"):
+            # Server tells client that game has ended and which color won the game
+            # END color
+            winner = arg[1]
+            # ...call functions in Client_GUI.py to manipulate GUI
         else:
             print(receive)
 
@@ -74,6 +96,8 @@ def connect(ip, port):
 
 
 def main():
+    global GUI
+
     # Parse arguments
     # (usage example: Client.py --ip 192.168.0.1 --port 9999)
     parser = argparse.ArgumentParser()
@@ -82,6 +106,9 @@ def main():
     args = parser.parse_args()
 
     connect(args.ip, args.port)
+
+    # Start GUI
+    GUI.startGUI()
 
 
 if __name__ == "__main__":
