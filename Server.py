@@ -48,6 +48,10 @@ def startServer(ip, port):
 
         # TODO: close clients, decrement curr_client, remove from CLIENTS{}, stop respective client thread (if needed)
 
+
+def fillerFunc():
+    print("blah")
+
     
 def startListener(client):
     global SERVER, LISTENING, CURR_CLIENTS
@@ -65,7 +69,7 @@ def startListener(client):
             SERVER.close()
             break
         elif (arg[0] == "DISCONNECT"):
-            # User disconnects
+            # Client/User disconnects from server
             msg = "DISCONNECT"
             CURR_CLIENTS -= 1
             COLORS.append(PLAYER_COLOR[client.fileno()])
@@ -101,7 +105,18 @@ def startListener(client):
             y = arg[2]
             # ...code for claiming square at (x,y) in game state
             # check for whether client has claimed 50% of the square should be done on client side(?)
-
+        elif (arg[0] == "START"):
+            # Client (perhaps host client?) tells server to start the game
+            fillerFunc()
+            # ...code to start game
+        elif (arg[0] == "RESTART"):
+            # Client tells server to restart game
+            fillerFunc()
+            # ...code to reset game state
+        elif (arg[0] == "END"):
+            # Client tells server to end game (perhaps the player who wins sends the message?)
+            fillerFunc()
+            # ...code to end game
 
 def broadcast(msg):
     for client in CLIENTS.values():
