@@ -13,8 +13,31 @@ CURR_CLIENTS = 0
 CLIENTS = {}
 LISTENING = {}
 
+BOARD_HEIGHT = 8
+BOARD_WIDTH = 8
+
 COLORS = ["RED", "BLUE", "GREEN", "YELLOW"]
 PLAYER_COLOR = {}
+BOARD = []
+
+class Box():
+    # Custom Box object
+    
+    def __init__(self):
+        self.LOCKED = False
+        self.CLAIMED_BY = None
+
+    def lock(self):
+        self.LOCKED = True
+
+    def unlock(self):
+        self.LOCKED = False
+
+    def claim(self, color):
+        self.CLAIMED_BY = color
+
+    def print(self):
+        print(str(self.LOCKED) + "\n" + str(self.CLAIMED_BY))
 
 def startServer(ip, port):
     global SERVER, LISTENING, CURR_CLIENTS
@@ -119,8 +142,23 @@ def startListener(client):
             # ...code to end game
 
 def broadcast(msg):
+    # Broadcast msg to all connected clients
     for client in CLIENTS.values():
         client.send(msg.encode('utf-8'))
+
+
+def createBoard():
+    global BOARD
+
+    # Create Box object for each square in game board and store reference in BOARD 2D array
+    for y in range(BOARD_HEIGHT):
+        row = []
+        for x in range(BOARD_WIDTH):
+            newBox = Box()
+            row.append(newBox)
+        BOARD.append(row)
+
+    BOARD[0][0].print()
 
 
 def main():
@@ -132,6 +170,10 @@ def main():
     parser.add_argument('--port', type=int, default=PORT, help="provide server port.")
     args = parser.parse_args()
 
+    # Initialize game board
+    createBoard()
+
+    # Start server
     startServer(args.ip, args.port)
 
 

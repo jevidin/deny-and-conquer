@@ -59,7 +59,7 @@ def startListener(s):
         elif (arg[0] == "END"):
             # Server tells client that game has ended and which color won the game
             # END color
-            winner = arg[1]
+            color = arg[1]
             # ...call functions in Client_GUI.py to manipulate GUI
         else:
             print(receive)
