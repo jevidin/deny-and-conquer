@@ -114,7 +114,10 @@ def startListener(client):
             # LOCK x y
             x = arg[1]
             y = arg[2]
+            color = arg[3]
             # ...code for locking square at (x,y) in game state
+            print(f"locking square {x}, {y} for {color}")
+            broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
             # Client tells server that square at (x,y) is unlocked
             # UNLOCK x y
