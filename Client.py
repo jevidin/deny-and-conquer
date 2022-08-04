@@ -241,7 +241,6 @@ class GamePage(Frame):
         y = int(y)
         print(f'fill box {x} {y} {color}')
         self.mycanvas.create_rectangle(x*self.myColWidth, y*self.myRowHeight, (x+1)*self.myColWidth, (y+1)*self.myRowHeight, fill=str(color).lower())
-        # gui1.main.get_frame('GamePage').fillBox()
 
 def startGUI():
     global WINDOW
