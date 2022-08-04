@@ -123,7 +123,9 @@ def startListener(client):
             # UNLOCK x y
             x = arg[1]
             y = arg[2]
+            color = arg[3]
             # ...code for unlocking square at (x,y) in game state
+            broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Client tells server that they claim the square at (x,y)
             # CLAIM x y
