@@ -41,7 +41,7 @@ def startListener(s):
             # ...code here for client to lock square at (x,y)
             # ...call functions in Client_GUI.py to manipulate GUI
             print(f"lock box {x} {y} for {color}")
-            GAME_WINDOW.fillBox(x, y, color)
+            GAME_WINDOW.lockPlayersBox(x, y, color)
         elif (arg[0] == "UNLOCK"):
             # Server tells client that square at (x,y) is unlocked
             # UNLOCK x y
@@ -55,6 +55,7 @@ def startListener(s):
             x = arg[1]
             y = arg[2]
             color = arg[3]
+            GAME_WINDOW.fillBox(x, y, color)
             # ...code here for client to lock square at (x,y) and color it
             # ...call functions in Client_GUI.py to manipulate GUI
         elif (arg[0] == "START"):
@@ -108,6 +109,7 @@ WINDOW = None
 
 current_x, current_y = 0,0
 currentBox = (-1, -1) # col, row
+lockedBoxes = [[0 for x in range(8)] for y in range(8)]
 
 class MainView(Frame):
     def __init__(self, *args, **kwargs):
@@ -120,7 +122,6 @@ class MainView(Frame):
             frame.grid(row=0, column=0, sticky='nsew')
             self.listing[page_name] = frame
 
-        # self.listing['GamePage'].fillBox()
         self.up_frame('HomePage')
 
     def up_frame(self, page_name):
@@ -173,6 +174,7 @@ class GamePage(Frame):
             global currentBox
             current_x, current_y = event.x, event.y
             currentBox = getBox(event)
+            lockBox(event)
 
         def addLine(event):
             global current_x, current_y
@@ -193,7 +195,7 @@ class GamePage(Frame):
             boxAreas[row][col] += linelen
             if boxAreas[row][col]/(col_width*row_height) >= 0.5:
                 boxAreas[row][col] = -1
-                lockBox(event)
+
 
         def clearBox(event):
             c='white'
@@ -215,11 +217,9 @@ class GamePage(Frame):
 
         def lockBox(event):
             box = getBox(event)
-            self.mycanvas.create_rectangle(box[0]*col_width, box[1]*row_height, (box[0]+1)*col_width, (box[1]+1)*row_height, fill="grey")
-            # Send packet to permanently lock ownership of this box to player
+            # Send packet to temporarily lock ownership of this box to player
             msg = f'LOCK {box[0]} {box[1]} {COLOR}'
             SOCKET.send(msg.encode('utf-8'))
-            print("sending lock request")
             checkEndgame()
 
         def makeBoxes(event):
@@ -239,6 +239,18 @@ class GamePage(Frame):
         y = int(y)
         print(f'fill box {x} {y} {color}')
         self.mycanvas.create_rectangle(x*self.myColWidth, y*self.myRowHeight, (x+1)*self.myColWidth, (y+1)*self.myRowHeight, fill=str(color).lower())
+    
+    def lockPlayersBox(self, col, row, opponent_color):
+        col = int(col)
+        row = int(row)
+        lockedBoxes[row][col] = 1
+        self.mycanvas.create_text(col*self.myColWidth + 75, row*self.myRowHeight + 56, text="DRAWING...", fill=opponent_color, font=('Helvetica 15 bold'))
+        print(lockedBoxes[row][col] == 1)
+    
+    def unlockPlayersBox(self, col, row):
+        lockedBoxes[row][col] = 0
+        self.mycanvas.create_rectangle(col*self.myColWidth, row*self.myRowHeight, (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill='white')
+        print("unlocking Boxes: ", row, col, lockedBoxes[row][col] == 0)
 
 def startGUI():
     global WINDOW
