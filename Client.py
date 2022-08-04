@@ -49,6 +49,7 @@ def startListener(s):
             y = arg[2]
             # ...code here for client to unlock square at (x,y)
             # ...call functions in Client_GUI.py to manipulate GUI
+            GAME_WINDOW.unlockPlayersBox(x, y)
         elif (arg[0] == "CLAIM"):
             # Server tells client that square at (x,y) is claimed by (color)
             # CLAIM x y color
@@ -203,6 +204,7 @@ class GamePage(Frame):
                 c = COLOR
             else:
                 boxAreas[currentBox[1]][currentBox[0]] = 0
+                unlockBox(event)
             self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill=c)
 
         def checkEndgame():
@@ -221,6 +223,16 @@ class GamePage(Frame):
             msg = f'LOCK {box[0]} {box[1]} {COLOR}'
             SOCKET.send(msg.encode('utf-8'))
             checkEndgame()
+
+        def unlockBox(event):
+            box = getBox(event)
+
+            #locked_boxAreas[box[0]][box[1]] = 0
+            #Tell other players that this box is unlocked
+
+            msg = f'UNLOCK {box[0]} {box[1]} {COLOR}'
+            SOCKET.send(msg.encode('utf-8'))
+            print("sending unlock request")
 
         def makeBoxes(event):
             print('makeboxes')
@@ -248,6 +260,8 @@ class GamePage(Frame):
         print(lockedBoxes[row][col] == 1)
     
     def unlockPlayersBox(self, col, row):
+        col = int(col)
+        row = int(row)
         lockedBoxes[row][col] = 0
         self.mycanvas.create_rectangle(col*self.myColWidth, row*self.myRowHeight, (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill='white')
         print("unlocking Boxes: ", row, col, lockedBoxes[row][col] == 0)
