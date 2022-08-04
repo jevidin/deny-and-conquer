@@ -2,11 +2,9 @@ import socket
 import argparse
 import threading
 
-from tabnanny import check
 from tkinter import *
 import tkinter.font as font
 import math
-from turtle import clear
 
 # Defaults
 SERVER_IP = socket.gethostname()
