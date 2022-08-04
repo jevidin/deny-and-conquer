@@ -109,7 +109,6 @@ def connect(ip, port):
 WINDOW = None
 
 current_x, current_y = 0,0
-color = 'black'
 currentBox = (-1, -1) # col, row
 
 class MainView(Frame):
@@ -181,7 +180,7 @@ class GamePage(Frame):
             global current_x, current_y
             box = getBox(event)
             if box == currentBox and boxAreas[box[1]][box[0]] >= 0:
-                c = color
+                c = COLOR
                 self.mycanvas.create_line((current_x,current_y,event.x,event.y),fill = c, width=5)
                 fillArea(lineLength(current_x, current_y, event.x, event.y) * 5, box[0], box[1], event)
                 current_x, current_y = event.x, event.y
@@ -199,20 +198,12 @@ class GamePage(Frame):
                 lockBox(event)
 
         def clearBox(event):
-            box = getBox(event)
             c='white'
-            if (0 <= box[0] <= 7) and (0 <= box[1] <= 7):
-                if boxAreas[box[1]][box[0]] < 0:
-                    c = 'grey'
-                else:
-                    boxAreas[box[1]][box[0]] = 0
-                self.mycanvas.create_rectangle(box[0]*col_width, box[1]*row_height, (box[0]+1)*col_width, (box[1]+1)*row_height, fill=c)
+            if boxAreas[currentBox[1]][currentBox[0]] < 0:
+                c = COLOR
             else:
-                if boxAreas[currentBox[1]][currentBox[0]] < 0:
-                    c = 'grey'
-                else:
-                    boxAreas[currentBox[1]][currentBox[0]] = 0
-                self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill=c)
+                boxAreas[currentBox[1]][currentBox[0]] = 0
+            self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill=c)
 
         def checkEndgame():
             gameEnd = True
