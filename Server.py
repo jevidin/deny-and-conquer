@@ -22,7 +22,7 @@ BOARD = []
 
 class Box():
     # Custom Box object
-    
+
     def __init__(self):
         self.LOCKED = False
         self.CLAIMED_BY = None
@@ -44,6 +44,7 @@ def startServer(ip, port):
 
     # Create a TCP socket
     SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     # Bind the socket to the server address and listen
     SERVER.bind((ip, port))
     SERVER.listen(4)

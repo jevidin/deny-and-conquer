@@ -3,8 +3,10 @@ from tkinter import *
 import tkinter.font as font
 import math
 from turtle import clear
+import Client
 
 WINDOW = None
+CLIENT = None
 
 current_x, current_y = 0,0
 color = 'black'
@@ -46,7 +48,7 @@ class HomePage(Frame):
 class GamePage(Frame):
 
     def __init__(self, parent, controller):
-        global WINDOW
+        global WINDOW, CLIENT
         
         Frame.__init__(self, parent)
 
@@ -66,6 +68,9 @@ class GamePage(Frame):
             # Calculate column and row number
             col = int(event.x//col_width)
             row = int(event.y//row_height)
+            CLIENT.sendMessage("PING")
+            # print(row)
+            # print(col)
             return (col, row)
 
         def locate_xy(event):
@@ -145,13 +150,17 @@ class GamePage(Frame):
         # gui1.main.get_frame('GamePage').fillBox()
 
 def startGUI():
-    global WINDOW
+    global WINDOW, CLIENT
+
     WINDOW = Tk()
     WINDOW.geometry("1200x900")
     WINDOW.rowconfigure(0, weight=1)
     WINDOW.columnconfigure(0, weight=1)
     WINDOW.resizable(False,False)
     main = MainView(WINDOW)
+    CLIENT = Client.Client()
     # main.pack(side="top", fill="both", expand=True)
 
     WINDOW.mainloop()
+
+startGUI()
