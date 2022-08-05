@@ -116,7 +116,6 @@ def startListener(client):
             y = arg[2]
             color = arg[3]
             # ...code for locking square at (x,y) in game state
-            print(f"locking square {x}, {y} for {color}")
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
             # Client tells server that square at (x,y) is unlocked
@@ -131,8 +130,10 @@ def startListener(client):
             # CLAIM x y
             x = arg[1]
             y = arg[2]
+            color = arg[3]
             # ...code for claiming square at (x,y) in game state
             # check for whether client has claimed 50% of the square should be done on client side(?)
+            broadcast(f"CLAIM {x} {y} {color}")
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
             fillerFunc()
