@@ -179,13 +179,13 @@ class GamePage(Frame):
             global currentBox
             current_x, current_y = event.x, event.y
             currentBox = getBox(event)
-            if boxAreas[currentBox[1]][currentBox[0]] >= 0:
+            if boxAreas[currentBox[1]][currentBox[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 0:
                 lockBox(currentBox[0], currentBox[1])
 
         def addLine(event):
             global current_x, current_y
             box = getBox(event)
-            if box == currentBox and boxAreas[box[1]][box[0]] >= 0:
+            if box == currentBox and boxAreas[box[1]][box[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 0:
                 c = COLOR
                 self.mycanvas.create_line((current_x,current_y,event.x,event.y),fill = c, width=5)
                 fillArea(lineLength(current_x, current_y, event.x, event.y) * 5, box[0], box[1])
@@ -204,14 +204,10 @@ class GamePage(Frame):
 
 
         def clearBox(event):
-            c='white'
-            print(f'box: {currentBox[0]} {currentBox[1]} value: {boxAreas[currentBox[1]][currentBox[0]]}')
-            if boxAreas[currentBox[1]][currentBox[0]] < 0:
-                c = COLOR
-            else:
+            if boxAreas[currentBox[1]][currentBox[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 0:
                 boxAreas[currentBox[1]][currentBox[0]] = 0
                 unlockBox(currentBox[0], currentBox[1])
-                self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill=c)
+                self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill='white')
 
         def checkEndgame():
             gameEnd = True
