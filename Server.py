@@ -6,7 +6,7 @@ import threading
 SERVER_IP = socket.gethostname()
 SERVER = None
 PORT = 9999
-BUFFER = 128
+BUFFER = 1024
 
 MAX_CLIENTS = 4
 CURR_CLIENTS = 0
@@ -22,7 +22,6 @@ BOARD = []
 
 class Box():
     # Custom Box object
-    
     def __init__(self):
         self.LOCKED = False
         self.CLAIMED_BY = None
@@ -133,6 +132,12 @@ def startListener(client):
             color = arg[3]
             # ...code for claiming square at (x,y) in game state
             # check for whether client has claimed 50% of the square should be done on client side(?)
+            col = int(x)
+            row = int(y)
+            BOARD[row][col].claim(color)
+            BOARD[row][col].print()
+            # are all 64 boxes taken if yes end game
+            print(f'row: {row} col {col}')
             broadcast(f"CLAIM {x} {y} {color}")
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
