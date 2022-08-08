@@ -7,9 +7,6 @@ SERVER_IP = socket.gethostname()
 PORT = 9999
 BUFFER = 128
 
-COLOR = None
-LISTENING = True
-
 class Client():
     def __init__(self):
         self.LISTENING = True
@@ -30,11 +27,17 @@ class Client():
     def sendMessage(self, msg):
         self.SOCKET.send(msg.encode('utf-8'))
 
+    def getColor(self):
+        return self.COLOR
+
     def startInput(self):
         while self.LISTENING:
             msg = input()
             if (self.LISTENING):
                 self.SOCKET.send(msg.encode('utf-8'))
+
+    def setGameWindow(self, gameWindow):
+        self.GAME_WINDOW = gameWindow
 
     def startListener(self):
         while self.LISTENING:
@@ -47,26 +50,29 @@ class Client():
                 break
             elif (arg[0] == "LOCK"):
                 # Server tells client that square at (x,y) is locked
-                # LOCK x y
+                # LOCK x y color
                 x = arg[1]
                 y = arg[2]
-                # ...code here for client to lock square at (x,y)
-                # ...call functions in Client_GUI.py to manipulate GUI
+                color = arg[3]
+
+                if (color != self.COLOR):
+                    self.GAME_WINDOW.lockPlayersBox(x, y, color)
             elif (arg[0] == "UNLOCK"):
                 # Server tells client that square at (x,y) is unlocked
                 # UNLOCK x y
                 x = arg[1]
                 y = arg[2]
-                # ...code here for client to unlock square at (x,y)
-                # ...call functions in Client_GUI.py to manipulate GUI
+                
+                if (color != self.COLOR):
+                    self.GAME_WINDOW.unlockPlayersBox(x, y)
             elif (arg[0] == "CLAIM"):
                 # Server tells client that square at (x,y) is claimed by (color)
                 # CLAIM x y color
                 x = arg[1]
                 y = arg[2]
                 color = arg[3]
-                # ...code here for client to lock square at (x,y) and color it
-                # ...call functions in Client_GUI.py to manipulate GUI
+
+                self.GAME_WINDOW.fillBox(x, y, color)
             elif (arg[0] == "START"):
                 # Server tells client that game has started
                 self.fillerFunc()
