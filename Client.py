@@ -152,13 +152,11 @@ class HomePage(Frame):
         buttonFont = font.Font(family='Helvetica', size=16, weight='bold')
         btn = Button(self, text="Start", font=buttonFont, height=5,
                      width=15, command=lambda: controller.up_frame('GamePage'))
-        # def connectToServer(event=None):
-        #     global SERVER_IP
-        #     global PORT
-        #     connect(SERVER_IP, PORT)
-
-
-        # btn.bind('<Button-1>', connectToServer)
+        def connectToServer(event=None):
+            global SERVER_IP
+            global PORT
+            connect(SERVER_IP, PORT)
+        btn.bind('<Button-1>', connectToServer)
         btn.pack()
 
 
