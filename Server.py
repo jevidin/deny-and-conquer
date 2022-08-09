@@ -114,6 +114,11 @@ def startListener(client):
             x = arg[1]
             y = arg[2]
             color = arg[3]
+            row = int(y)
+            col = int(x)
+            BOARD[row][col].lock()
+            BOARD[row][col].print()
+            print(f'row: {row}, col: {col} locked')
             # ...code for locking square at (x,y) in game state
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
@@ -122,6 +127,11 @@ def startListener(client):
             x = arg[1]
             y = arg[2]
             color = arg[3]
+            row = int(y)
+            col = int(x)
+            BOARD[row][col].unlock()
+            BOARD[row][col].print()
+            print(f'row: {row}, col: {col} unlocked')
             # ...code for unlocking square at (x,y) in game state
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
@@ -137,7 +147,7 @@ def startListener(client):
             BOARD[row][col].claim(color)
             BOARD[row][col].print()
             # are all 64 boxes taken if yes end game
-            print(f'row: {row} col {col}')
+            print(f'row: {row} col {col} claimed by {color}')
             broadcast(f"CLAIM {x} {y} {color}")
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
