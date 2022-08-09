@@ -1,5 +1,4 @@
 import socket
-import argparse
 import threading
 
 # Defaults
@@ -54,7 +53,6 @@ class Client():
                 x = arg[1]
                 y = arg[2]
                 color = arg[3]
-
                 if (color != self.COLOR):
                     self.GAME_WINDOW.lockPlayersBox(x, y, color)
             elif (arg[0] == "UNLOCK"):
@@ -62,7 +60,6 @@ class Client():
                 # UNLOCK x y
                 x = arg[1]
                 y = arg[2]
-                
                 if (color != self.COLOR):
                     self.GAME_WINDOW.unlockPlayersBox(x, y)
             elif (arg[0] == "CLAIM"):
@@ -71,7 +68,6 @@ class Client():
                 x = arg[1]
                 y = arg[2]
                 color = arg[3]
-
                 self.GAME_WINDOW.fillBox(x, y, color)
             elif (arg[0] == "START"):
                 # Server tells client that game has started

@@ -1,8 +1,6 @@
-from tabnanny import check
 from tkinter import *
 import tkinter.font as font
 import math
-from turtle import clear
 import Client
 
 WINDOW = None
@@ -118,21 +116,18 @@ class GamePage(Frame):
                 controller.up_frame('HomePage')
 
         def lockBox(col, row):
-            # box = getBox(event)
             # Send packet to temporarily lock ownership of this box to player
             msg = f'LOCK {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
             checkEndgame()
 
         def unlockBox(col, row):
-            # box = getBox(event)
-            #locked_boxAreas[box[0]][box[1]] = 0
-            #Tell other players that this box is unlocked
+            # Tell other players that this box is unlocked
             msg = f'UNLOCK {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
         
         def claimBox(col, row):
-            # box = getBox(event)
+            # Tell other players that this box is claimed
             msg = f'CLAIM {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
 

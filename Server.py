@@ -84,6 +84,7 @@ def startListener(client):
         arg = receive.split(' ')
 
         if (arg[0] == "STOP"):
+            # Stops server
             # Will cause exception messages
             msg = "STOP"
             LISTENING[client.fileno()] = False
@@ -93,6 +94,7 @@ def startListener(client):
             SERVER.close()
             break
         elif (arg[0] == "DISCONNECT"):
+            # Test function
             # Client/User disconnects from server
             msg = "DISCONNECT"
             CURR_CLIENTS -= 1
@@ -116,7 +118,7 @@ def startListener(client):
             x = arg[1]
             y = arg[2]
             color = arg[3]
-            # ...code for locking square at (x,y) in game state
+
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
             # Client tells server that square at (x,y) is unlocked
@@ -124,7 +126,7 @@ def startListener(client):
             x = arg[1]
             y = arg[2]
             color = arg[3]
-            # ...code for unlocking square at (x,y) in game state
+
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Client tells server that they claim the square at (x,y)
@@ -132,8 +134,12 @@ def startListener(client):
             x = arg[1]
             y = arg[2]
             color = arg[3]
-            # ...code for claiming square at (x,y) in game state
-            # check for whether client has claimed 50% of the square should be done on client side(?)
+
+            col = int(x)
+            row = int(y)
+            BOARD[row][col].claim(color)
+            BOARD[row][col].print()
+
             broadcast(f"CLAIM {x} {y} {color}")
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
@@ -164,8 +170,6 @@ def createBoard():
             newBox = Box()
             row.append(newBox)
         BOARD.append(row)
-
-    BOARD[0][0].print()
 
 
 def main():
