@@ -16,6 +16,7 @@ COLOR = None
 LISTENING = True
 
 GAME_WINDOW = None
+END_WINDOW = None
 
 
 def fillerFunc():
@@ -25,6 +26,7 @@ def fillerFunc():
 def startListener(s):
     global LISTENING
     global GAME_WINDOW
+    global END_WINDOW
 
     while LISTENING:
         receive = s.recv(BUFFER).decode('utf-8')
@@ -72,10 +74,16 @@ def startListener(s):
             # Server tells client to restart game (reset GUI)
             fillerFunc()
             # ...call functions in Client_GUI.py to manipulate GUI
+        elif (arg[0] == "ENDPAGE"):
+            END_WINDOW.winUpdate(arg[1])
+            if color != COLOR:
+                GAME_WINDOW.bringUpEnd()
         elif (arg[0] == "END"):
             # Server tells client that game has ended and which color won the game
             # END color
-            color = arg[1]
+            print(f"[DISCONNECTED] Winner: {arg[1]}. Press any key to exit program.")
+            LISTENING = False
+            break
             # ...call functions in Client_GUI.py to manipulate GUI
         else:
             print(receive)
@@ -125,7 +133,7 @@ class MainView(Frame):
         container = Frame()
         container.grid(row=0, column=0, sticky='nsew')
         self.listing = {}
-        for p in (HomePage, GamePage):
+        for p in (HomePage, GamePage, EndPage):
             page_name = p.__name__
             frame = p(parent=container, controller=self)
             frame.grid(row=0, column=0, sticky='nsew')
@@ -159,12 +167,34 @@ class HomePage(Frame):
         btn.bind('<Button-1>', connectToServer)
         btn.pack()
 
+class EndPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        label = Label(self, text="Game Over", font=("Helvetica", 50))
+        label.pack()
+        buttonFont = font.Font(family='Helvetica', size=16, weight='bold')
+        btn = Button(self, text = "Disconnect", font=buttonFont, height=5, width=15, command=lambda: end())
+        btn.pack()
+
+        def end():
+            SOCKET.send("END".encode('utf-8'))
+            WINDOW.destroy()
+
+    def winUpdate(self, arg):
+        label2txt = "Player won: " + arg
+        label2 = Label(self, text=label2txt, font=("Helvetica", 40), fg=str(arg).lower())
+        label2.pack()
+
+
 
 class GamePage(Frame):
 
     def __init__(self, parent, controller):
         global WINDOW
         global SOCKET
+        global CONTROL2
+        CONTROL2 = controller
 
         Frame.__init__(self, parent)
 
@@ -223,22 +253,11 @@ class GamePage(Frame):
                 self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (
                     currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill='white')
 
-        def checkEndgame():
-            gameEnd = True
-            for i in range(8):
-                for j in range(8):
-                    if boxAreas[i][j] >= 0:
-                        gameEnd = False
-            # Server will probably handle end game
-            if gameEnd:
-                controller.up_frame('HomePage')
-
         def lockBox(col, row):
             # box = getBox(event)
             # Send packet to temporarily lock ownership of this box to player
             msg = f'LOCK {col} {row} {COLOR}'
             SOCKET.send(msg.encode('utf-8'))
-            checkEndgame()
 
         def unlockBox(col, row):
             # box = getBox(event)
@@ -251,6 +270,18 @@ class GamePage(Frame):
             # box = getBox(event)
             msg = f'CLAIM {col} {row} {COLOR}'
             SOCKET.send(msg.encode('utf-8'))
+            checkEndgame()
+
+        def checkEndgame():
+            gameEnd = True
+            for i in range(8):
+                for j in range(8):
+                    if boxAreas[i][j] >= 0:
+                        gameEnd = False
+            # Send end state to Server
+            if gameEnd:
+                SOCKET.send("ENDPAGE".encode('utf-8'))
+                controller.up_frame('EndPage')
 
         def makeBoxes(event):
             for i in range(8):
@@ -287,10 +318,14 @@ class GamePage(Frame):
                                        (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill='white')
         print("unlocking Boxes: ", col, row, lockedBoxes[row][col] == 0)
 
+    def bringUpEnd(self):
+        CONTROL2.up_frame('EndPage')
+
 
 def startGUI():
     global WINDOW
     global GAME_WINDOW
+    global END_WINDOW
     WINDOW = Tk()
     WINDOW.geometry("1200x900")
     WINDOW.rowconfigure(0, weight=1)
@@ -298,6 +333,7 @@ def startGUI():
     WINDOW.resizable(False, False)
     main = MainView(WINDOW)
     GAME_WINDOW = main.get_frame("GamePage")
+    END_WINDOW = main.get_frame("EndPage")
     # main.pack(side="top", fill="both", expand=True)
 
     WINDOW.mainloop()

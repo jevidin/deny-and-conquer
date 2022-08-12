@@ -19,6 +19,7 @@ BOARD_WIDTH = 8
 COLORS = ["RED", "BLUE", "GREEN", "YELLOW"]
 PLAYER_COLOR = {}
 BOARD = []
+boxColors = []
 
 class Box():
     # Custom Box object
@@ -48,9 +49,14 @@ def startServer(ip, port):
     SERVER.listen(4)
     print(f"[SERVER LIVE] listening on {ip} and port {port}")
 
-    while CURR_CLIENTS < MAX_CLIENTS:
-        # Blocking line for accepting client connection request
-        client, addr = SERVER.accept()
+    while CURR_CLIENTS <= MAX_CLIENTS:
+        try:
+            # Blocking line for accepting client connection request
+            client, addr = SERVER.accept()
+        except:
+            print("Loop break")
+            SERVER.close()
+            break
 
         # Assign client a color
         color = COLORS.pop(0)
@@ -68,11 +74,19 @@ def startServer(ip, port):
         # Increment CURR_CLIENTS
         CURR_CLIENTS += 1
 
-        # TODO: close clients, decrement curr_client, remove from CLIENTS{}, stop respective client thread (if needed)
+    print("\n[SERVER CLOSED] all connections ended.")
 
 
 def fillerFunc():
     print("blah")
+
+
+def saveboxColors(clr):
+    boxColors.append(clr)
+
+
+def chooseWinner():
+    return max(boxColors, key=boxColors.count)
 
     
 def startListener(client):
@@ -149,6 +163,7 @@ def startListener(client):
             # are all 64 boxes taken if yes end game
             print(f'row: {row} col {col} claimed by {color}')
             broadcast(f"CLAIM {x} {y} {color}")
+            saveboxColors(color)
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
             fillerFunc()
@@ -157,10 +172,21 @@ def startListener(client):
             # Client tells server to restart game
             fillerFunc()
             # ...code to reset game state
+        elif (arg[0] == "ENDPAGE"):
+            msg = "ENDPAGE " + chooseWinner()
+            broadcast(msg)
         elif (arg[0] == "END"):
             # Client tells server to end game (perhaps the player who wins sends the message?)
-            fillerFunc()
             # ...code to end game
+            msg = "END " + chooseWinner()
+            LISTENING[client.fileno()] = False
+            CURR_CLIENTS -= 1
+            client.send(msg.encode('utf-8'))
+            client.close()
+            break
+    print(f"CC: {CURR_CLIENTS}")
+    if CURR_CLIENTS < 1:
+        SERVER.close()
 
 def broadcast(msg):
     # Broadcast msg to all connected clients
