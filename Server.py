@@ -6,7 +6,7 @@ import threading
 SERVER_IP = socket.gethostname()
 SERVER = None
 PORT = 9999
-BUFFER = 128
+BUFFER = 1024
 
 MAX_CLIENTS = 4
 CURR_CLIENTS = 0
@@ -19,10 +19,10 @@ BOARD_WIDTH = 8
 COLORS = ["RED", "BLUE", "GREEN", "YELLOW"]
 PLAYER_COLOR = {}
 BOARD = []
+boxColors = []
 
 class Box():
     # Custom Box object
-
     def __init__(self):
         self.LOCKED = False
         self.CLAIMED_BY = None
@@ -44,15 +44,19 @@ def startServer(ip, port):
 
     # Create a TCP socket
     SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     # Bind the socket to the server address and listen
     SERVER.bind((ip, port))
     SERVER.listen(4)
     print(f"[SERVER LIVE] listening on {ip} and port {port}")
 
-    while CURR_CLIENTS < MAX_CLIENTS:
-        # Blocking line for accepting client connection request
-        client, addr = SERVER.accept()
+    while CURR_CLIENTS <= MAX_CLIENTS:
+        try:
+            # Blocking line for accepting client connection request
+            client, addr = SERVER.accept()
+        except:
+            print("Loop break")
+            SERVER.close()
+            break
 
         # Assign client a color
         color = COLORS.pop(0)
@@ -70,11 +74,19 @@ def startServer(ip, port):
         # Increment CURR_CLIENTS
         CURR_CLIENTS += 1
 
-        # TODO: close clients, decrement curr_client, remove from CLIENTS{}, stop respective client thread (if needed)
+    print("\n[SERVER CLOSED] all connections ended.")
 
 
 def fillerFunc():
     print("blah")
+
+
+def saveboxColors(clr):
+    boxColors.append(clr)
+
+
+def chooseWinner():
+    return max(boxColors, key=boxColors.count)
 
     
 def startListener(client):
@@ -84,7 +96,6 @@ def startListener(client):
         arg = receive.split(' ')
 
         if (arg[0] == "STOP"):
-            # Stops server
             # Will cause exception messages
             msg = "STOP"
             LISTENING[client.fileno()] = False
@@ -94,7 +105,6 @@ def startListener(client):
             SERVER.close()
             break
         elif (arg[0] == "DISCONNECT"):
-            # Test function
             # Client/User disconnects from server
             msg = "DISCONNECT"
             CURR_CLIENTS -= 1
@@ -103,15 +113,6 @@ def startListener(client):
             client.send(msg.encode('utf-8'))
             client.close()
             break
-        elif (arg[0] == "PRINT"):
-            # Test function
-            for data in arg:
-                if (data != "PRINT"):
-                    print(data)
-        elif (arg[0] == "PING"):
-            # Test function
-            msg = "PONG!"
-            client.send(msg.encode('utf-8'))
         elif (arg[0] == "LOCK"):
             # Client tells server that square at (x,y) is locked
             # LOCK x y
@@ -119,6 +120,12 @@ def startListener(client):
             y = arg[2]
             color = arg[3]
 
+            row = int(y)
+            col = int(x)
+            BOARD[row][col].lock()
+            BOARD[row][col].print()
+
+            print(f'row: {row}, col: {col} locked')
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
             # Client tells server that square at (x,y) is unlocked
@@ -127,6 +134,12 @@ def startListener(client):
             y = arg[2]
             color = arg[3]
 
+            row = int(y)
+            col = int(x)
+            BOARD[row][col].unlock()
+            BOARD[row][col].print()
+
+            print(f'row: {row}, col: {col} unlocked')
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Client tells server that they claim the square at (x,y)
@@ -140,7 +153,9 @@ def startListener(client):
             BOARD[row][col].claim(color)
             BOARD[row][col].print()
 
+            print(f'row: {row} col {col} claimed by {color}')
             broadcast(f"CLAIM {x} {y} {color}")
+            saveboxColors(color)
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
             fillerFunc()
@@ -149,10 +164,20 @@ def startListener(client):
             # Client tells server to restart game
             fillerFunc()
             # ...code to reset game state
+        elif (arg[0] == "ENDPAGE"):
+            msg = "ENDPAGE " + chooseWinner()
+            broadcast(msg)
         elif (arg[0] == "END"):
-            # Client tells server to end game (perhaps the player who wins sends the message?)
-            fillerFunc()
-            # ...code to end game
+            # Client tells server to end game
+            msg = "END " + chooseWinner()
+            LISTENING[client.fileno()] = False
+            CURR_CLIENTS -= 1
+            client.send(msg.encode('utf-8'))
+            client.close()
+            break
+    print(f"CC: {CURR_CLIENTS}")
+    if CURR_CLIENTS < 1:
+        SERVER.close()
 
 def broadcast(msg):
     # Broadcast msg to all connected clients
@@ -170,6 +195,8 @@ def createBoard():
             newBox = Box()
             row.append(newBox)
         BOARD.append(row)
+
+    BOARD[0][0].print()
 
 
 def main():

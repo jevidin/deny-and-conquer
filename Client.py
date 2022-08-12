@@ -7,7 +7,7 @@ PORT = 9999
 BUFFER = 128
 
 class Client():
-    def __init__(self):
+    def connect(self):
         self.LISTENING = True
 
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -37,6 +37,9 @@ class Client():
 
     def setGameWindow(self, gameWindow):
         self.GAME_WINDOW = gameWindow
+
+    def setEndWindow(self, endWindow):
+        self.END_WINDOW = endWindow
 
     def startListener(self):
         while self.LISTENING:
@@ -77,10 +80,15 @@ class Client():
                 # Server tells client to restart game (reset GUI)
                 self.fillerFunc()
                 # ...call functions in Client_GUI.py to manipulate GUI
+            elif (arg[0] == "ENDPAGE"):
+                self.END_WINDOW.winUpdate(arg[1])
+                if (color != self.COLOR):
+                    self.GAME_WINDOW.bringUpEnd()
             elif (arg[0] == "END"):
                 # Server tells client that game has ended and which color won the game
                 # END color
-                color = arg[1]
-                # ...call functions in Client_GUI.py to manipulate GUI
+                print(f"[DISCONNECTED] Winner: {arg[1]}. Press any key to exit program.")
+                self.LISTENING = False
+                break
             else:
                 print(receive)
