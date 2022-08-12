@@ -76,19 +76,12 @@ def startServer(ip, port):
 
     print("\n[SERVER CLOSED] all connections ended.")
 
-
-def fillerFunc():
-    print("blah")
-
-
 def saveboxColors(clr):
     boxColors.append(clr)
-
 
 def chooseWinner():
     return max(boxColors, key=boxColors.count)
 
-    
 def startListener(client):
     global SERVER, LISTENING, CURR_CLIENTS
     while LISTENING[client.fileno()]:
@@ -113,15 +106,6 @@ def startListener(client):
             client.send(msg.encode('utf-8'))
             client.close()
             break
-        elif (arg[0] == "PRINT"):
-            # Test function
-            for data in arg:
-                if (data != "PRINT"):
-                    print(data)
-        elif (arg[0] == "PING"):
-            # Test function
-            msg = "PONG!"
-            client.send(msg.encode('utf-8'))
         elif (arg[0] == "LOCK"):
             # Client tells server that square at (x,y) is locked
             # LOCK x y
@@ -132,8 +116,8 @@ def startListener(client):
             col = int(x)
             BOARD[row][col].lock()
             BOARD[row][col].print()
+
             print(f'row: {row}, col: {col} locked')
-            # ...code for locking square at (x,y) in game state
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
             # Client tells server that square at (x,y) is unlocked
@@ -145,8 +129,8 @@ def startListener(client):
             col = int(x)
             BOARD[row][col].unlock()
             BOARD[row][col].print()
+
             print(f'row: {row}, col: {col} unlocked')
-            # ...code for unlocking square at (x,y) in game state
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Client tells server that they claim the square at (x,y)
@@ -154,30 +138,24 @@ def startListener(client):
             x = arg[1]
             y = arg[2]
             color = arg[3]
-            # ...code for claiming square at (x,y) in game state
-            # check for whether client has claimed 50% of the square should be done on client side(?)
             col = int(x)
             row = int(y)
             BOARD[row][col].claim(color)
             BOARD[row][col].print()
-            # are all 64 boxes taken if yes end game
             print(f'row: {row} col {col} claimed by {color}')
             broadcast(f"CLAIM {x} {y} {color}")
             saveboxColors(color)
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
-            fillerFunc()
-            # ...code to start game
+            pass
         elif (arg[0] == "RESTART"):
             # Client tells server to restart game
-            fillerFunc()
-            # ...code to reset game state
+            pass
         elif (arg[0] == "ENDPAGE"):
             msg = "ENDPAGE " + chooseWinner()
             broadcast(msg)
         elif (arg[0] == "END"):
-            # Client tells server to end game (perhaps the player who wins sends the message?)
-            # ...code to end game
+            # Client tells server to end game
             msg = "END " + chooseWinner()
             LISTENING[client.fileno()] = False
             CURR_CLIENTS -= 1
@@ -193,6 +171,18 @@ def broadcast(msg):
     for client in CLIENTS.values():
         client.send(msg.encode('utf-8'))
 
+def createBoard():
+    global BOARD
+
+    # Create Box object for each square in game board and store reference in BOARD 2D array
+    for y in range(BOARD_HEIGHT):
+        row = []
+        for x in range(BOARD_WIDTH):
+            newBox = Box()
+            row.append(newBox)
+        BOARD.append(row)
+
+    BOARD[0][0].print()
 
 def createBoard():
     global BOARD
@@ -222,7 +212,6 @@ def main():
 
     # Start server
     startServer(args.ip, args.port)
-
 
 if __name__ == "__main__":
     main()
