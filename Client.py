@@ -2,6 +2,11 @@ from tkinter import *
 import tkinter.font as font
 import math
 import ClientMessaging
+import argparse
+import socket
+
+SERVER_IP = socket.gethostname()
+PORT = 9999
 
 WINDOW = None
 CLIENT = None
@@ -209,8 +214,13 @@ def startGUI():
     main = MainView(WINDOW)
     GAME_WINDOW = main.get_frame("GamePage")
     END_WINDOW = main.get_frame("EndPage")
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--ip', type=str, default=SERVER_IP)
+    parser.add_argument('--port', type=int, default=PORT)
+    args = parser.parse_args()
 
-    CLIENT = ClientMessaging.Client()
+    CLIENT = ClientMessaging.Client(args.ip, args.port)
     CLIENT.setGameWindow(GAME_WINDOW)
     CLIENT.setEndWindow(END_WINDOW)
 

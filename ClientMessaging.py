@@ -12,12 +12,16 @@ BUFFER = 128
 SOCKET = None
 
 class Client():
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+
     def connect(self):
         self.LISTENING = True
         # Create TCP socket and connect to server with IP and PORT
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.SOCKET.connect((SERVER_IP, PORT))
-        print(f"[CONNECTED] to {SERVER_IP}")
+        self.SOCKET.connect((self.ip, self.port))
+        print(f"[CONNECTED] to {self.ip}")
         # Receive color assigned by server
         self.COLOR = self.SOCKET.recv(BUFFER).decode('utf-8')
         # Start thread to listen for messages from server
