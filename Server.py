@@ -123,9 +123,6 @@ def startListener(client):
             row = int(y)
             col = int(x)
             BOARD[row][col].unlock()
-            BOARD[row][col].print()
-
-            print(f'row: {row}, col: {col} unlocked')
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Server broadcasts to all clients that this box is permanently claimed by this player color

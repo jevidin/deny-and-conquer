@@ -109,7 +109,7 @@ class GamePage(Frame):
                 self.mycanvas.create_line(
                     (current_x, current_y, event.x, event.y), fill=c, width=5)
                 fillArea(lineLength(current_x, current_y,
-                         event.x, event.y) * 500, box[0], box[1])
+                         event.x, event.y) * 5, box[0], box[1])
                 current_x, current_y = event.x, event.y
 
         def lineLength(x0, y0, x1, y1):
