@@ -76,19 +76,12 @@ def startServer(ip, port):
 
     print("\n[SERVER CLOSED] all connections ended.")
 
-
-def fillerFunc():
-    print("blah")
-
-
 def saveboxColors(clr):
     boxColors.append(clr)
-
 
 def chooseWinner():
     return max(boxColors, key=boxColors.count)
 
-    
 def startListener(client):
     global SERVER, LISTENING, CURR_CLIENTS
     while LISTENING[client.fileno()]:
@@ -158,12 +151,10 @@ def startListener(client):
             saveboxColors(color)
         elif (arg[0] == "START"):
             # Client (perhaps host client?) tells server to start the game
-            fillerFunc()
-            # ...code to start game
+            pass
         elif (arg[0] == "RESTART"):
             # Client tells server to restart game
-            fillerFunc()
-            # ...code to reset game state
+            pass
         elif (arg[0] == "ENDPAGE"):
             msg = "ENDPAGE " + chooseWinner()
             broadcast(msg)
@@ -184,7 +175,6 @@ def broadcast(msg):
     for client in CLIENTS.values():
         client.send(msg.encode('utf-8'))
 
-
 def createBoard():
     global BOARD
 
@@ -197,7 +187,6 @@ def createBoard():
         BOARD.append(row)
 
     BOARD[0][0].print()
-
 
 def main():
     # Parse arguments
@@ -213,7 +202,6 @@ def main():
 
     # Start server
     startServer(args.ip, args.port)
-
 
 if __name__ == "__main__":
     main()

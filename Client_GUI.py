@@ -68,8 +68,6 @@ class EndPage(Frame):
         label2 = Label(self, text=label2txt, font=("Helvetica", 40), fg=str(arg).lower())
         label2.pack()
 
-
-
 class GamePage(Frame):
 
     def __init__(self, parent, controller):

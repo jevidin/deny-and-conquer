@@ -20,9 +20,6 @@ class Client():
         threading.Thread(target=self.startListener, args=()).start()
         threading.Thread(target=self.startInput, args=()).start()
 
-    def fillerFunc():
-        print("blah")
-
     def sendMessage(self, msg):
         self.SOCKET.send(msg.encode('utf-8'))
 
@@ -74,12 +71,10 @@ class Client():
                 self.GAME_WINDOW.fillBox(x, y, color)
             elif (arg[0] == "START"):
                 # Server tells client that game has started
-                self.fillerFunc()
-                # ...call functions in Client_GUI.py to manipulate GUI
+                pass
             elif (arg[0] == "RESTART"):
                 # Server tells client to restart game (reset GUI)
-                self.fillerFunc()
-                # ...call functions in Client_GUI.py to manipulate GUI
+                pass
             elif (arg[0] == "ENDPAGE"):
                 self.END_WINDOW.winUpdate(arg[1])
                 if (color != self.COLOR):
