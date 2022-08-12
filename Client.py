@@ -14,14 +14,13 @@ SOCKET = None
 class Client():
     def connect(self):
         self.LISTENING = True
-
+        # Create TCP socket and connect to server with IP and PORT
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.SOCKET.connect((SERVER_IP, PORT))
         print(f"[CONNECTED] to {SERVER_IP}")
-
+        # Receive color assigned by server
         self.COLOR = self.SOCKET.recv(BUFFER).decode('utf-8')
-        print(self.COLOR)
-
+        # Start thread to listen for messages from server
         threading.Thread(target=self.startListener, args=()).start()
         threading.Thread(target=self.startInput, args=()).start()
 
@@ -53,40 +52,32 @@ class Client():
                 self.LISTENING = False
                 break
             elif (arg[0] == "LOCK"):
-                # Server tells client that square at (x,y) is locked
-                # LOCK x y color
+                # Receive message from server to lock square at (x,y) for other player color
                 x = arg[1]
                 y = arg[2]
                 color = arg[3]
                 if (color != self.COLOR):
                     self.GAME_WINDOW.lockPlayersBox(x, y, color)
             elif (arg[0] == "UNLOCK"):
-                # Server tells client that square at (x,y) is unlocked
-                # UNLOCK x y
+                # Receive message from server to unlock square at (x,y)
                 x = arg[1]
                 y = arg[2]
                 if (color != self.COLOR):
                     self.GAME_WINDOW.unlockPlayersBox(x, y)
             elif (arg[0] == "CLAIM"):
-                # Server tells client that square at (x,y) is claimed by (color)
-                # CLAIM x y color
+                # Receive message from server to permanently claim square at (x,y) for other player color
                 x = arg[1]
                 y = arg[2]
                 color = arg[3]
                 self.GAME_WINDOW.fillBox(x, y, color)
-            elif (arg[0] == "START"):
-                # Server tells client that game has started
-                pass
-            elif (arg[0] == "RESTART"):
-                # Server tells client to restart game (reset GUI)
-                pass
             elif (arg[0] == "ENDPAGE"):
+                # Receive message from server to display winner
                 self.END_WINDOW.winUpdate(arg[1])
+                # Receive message from server to bring up end screen
                 if (color != self.COLOR):
                     self.GAME_WINDOW.bringUpEnd()
             elif (arg[0] == "END"):
-                # Server tells client that game has ended and which color won the game
-                # END color
+                # Receive message from server to print winner
                 print(f"[DISCONNECTED] Winner: {arg[1]}. Press any key to exit program.")
                 self.LISTENING = False
                 break

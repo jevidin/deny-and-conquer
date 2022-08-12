@@ -80,7 +80,6 @@ class GamePage(Frame):
         canvas = Canvas(self, background='yellow', width=1200, height=900)
         canvas.grid(row=0, column=0)
         WINDOW.update()
-        # boxAreas = [[0 for x in range(8)] for y in range(8)]
         col_width = canvas.winfo_width()/8
         row_height = canvas.winfo_height()/8
         self.mycanvas = canvas
@@ -90,7 +89,6 @@ class GamePage(Frame):
         def getBox(event):
             col_width = self.mycanvas.winfo_width()/8
             row_height = self.mycanvas.winfo_height()/8
-            # Calculate column and row number
             col = int(event.x//col_width)
             row = int(event.y//row_height)
             return (col, row)
@@ -133,20 +131,17 @@ class GamePage(Frame):
                     currentBox[0]+1)*col_width, (currentBox[1]+1)*row_height, fill='white')
 
         def lockBox(col, row):
-            # box = getBox(event)
-            # Send packet to temporarily lock ownership of this box to player
+            # Send message to server to temporarily lock ownership of this box to this player
             msg = f'LOCK {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
 
         def unlockBox(col, row):
-            # box = getBox(event)
-            #locked_boxAreas[box[0]][box[1]] = 0
-            # Tell other players that this box is unlocked
+            # Send message to server to tell other players that this box is unlocked
             msg = f'UNLOCK {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
 
         def claimBox(col, row):
-            # box = getBox(event)
+            # Send message to server to claim permanent ownership of this box to this player
             msg = f'CLAIM {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
             checkEndgame()
@@ -157,7 +152,7 @@ class GamePage(Frame):
                 for j in range(8):
                     if boxAreas[i][j] >= 0:
                         gameEnd = False
-            # Send end state to Server
+            # Send message to server to end game
             if gameEnd:
                 CLIENT.sendMessage("ENDPAGE")
                 controller.up_frame('EndPage')
@@ -187,7 +182,6 @@ class GamePage(Frame):
         lockedBoxes[row][col] = 1
         self.mycanvas.create_text(col*self.myColWidth + 75, row*self.myRowHeight +
                                   56, text="DRAWING...", fill=opponent_color, font=('Helvetica 15 bold'))
-        # print(lockedBoxes[row][col] == 1)
 
     def unlockPlayersBox(self, col, row):
         col = int(col)
@@ -219,7 +213,6 @@ def startGUI():
     CLIENT = Client.Client()
     CLIENT.setGameWindow(GAME_WINDOW)
     CLIENT.setEndWindow(END_WINDOW)
-    # main.pack(side="top", fill="both", expand=True)
 
     WINDOW.mainloop()
 

@@ -41,7 +41,6 @@ class Box():
 
 def startServer(ip, port):
     global SERVER, LISTENING, CURR_CLIENTS
-
     # Create a TCP socket
     SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Bind the socket to the server address and listen
@@ -89,7 +88,7 @@ def startListener(client):
         arg = receive.split(' ')
 
         if (arg[0] == "STOP"):
-            # Will cause exception messages
+            # Stop server and disconnect all client
             msg = "STOP"
             LISTENING[client.fileno()] = False
             client.send(msg.encode('utf-8'))
@@ -107,8 +106,7 @@ def startListener(client):
             client.close()
             break
         elif (arg[0] == "LOCK"):
-            # Client tells server that square at (x,y) is locked
-            # LOCK x y
+            # Server broadcasts to all clients to temporarily lock this box
             x = arg[1]
             y = arg[2]
             color = arg[3]
@@ -116,12 +114,9 @@ def startListener(client):
             col = int(x)
             BOARD[row][col].lock()
             BOARD[row][col].print()
-
-            print(f'row: {row}, col: {col} locked')
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
-            # Client tells server that square at (x,y) is unlocked
-            # UNLOCK x y
+            # Server broadcasts to all clients to unlock this box
             x = arg[1]
             y = arg[2]
             color = arg[3]
@@ -133,8 +128,7 @@ def startListener(client):
             print(f'row: {row}, col: {col} unlocked')
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
-            # Client tells server that they claim the square at (x,y)
-            # CLAIM x y
+            # Server broadcasts to all clients that this box is permanently claimed by this player color
             x = arg[1]
             y = arg[2]
             color = arg[3]
@@ -142,20 +136,14 @@ def startListener(client):
             row = int(y)
             BOARD[row][col].claim(color)
             BOARD[row][col].print()
-            print(f'row: {row} col {col} claimed by {color}')
             broadcast(f"CLAIM {x} {y} {color}")
             saveboxColors(color)
-        elif (arg[0] == "START"):
-            # Client (perhaps host client?) tells server to start the game
-            pass
-        elif (arg[0] == "RESTART"):
-            # Client tells server to restart game
-            pass
         elif (arg[0] == "ENDPAGE"):
+            # Server broadcasts to all clients the winning player's color
             msg = "ENDPAGE " + chooseWinner()
             broadcast(msg)
         elif (arg[0] == "END"):
-            # Client tells server to end game
+            # Server tells to disconnect
             msg = "END " + chooseWinner()
             LISTENING[client.fileno()] = False
             CURR_CLIENTS -= 1
@@ -167,7 +155,7 @@ def startListener(client):
         SERVER.close()
 
 def broadcast(msg):
-    # Broadcast msg to all connected clients
+    # Broadcast message to all connected clients
     for client in CLIENTS.values():
         client.send(msg.encode('utf-8'))
 
