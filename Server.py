@@ -47,7 +47,7 @@ def startServer(ip, port):
     SERVER.bind((ip, port))
     SERVER.listen(4)
     print(f"[SERVER LIVE] listening on {ip} and port {port}")
-
+    mutex = threading.Lock()
     while CURR_CLIENTS <= MAX_CLIENTS:
         try:
             # Blocking line for accepting client connection request
@@ -68,7 +68,7 @@ def startServer(ip, port):
         LISTENING[client.fileno()] = True
 
         # Have a listener for each client run on separate threads
-        threading.Thread(target=startListener, args=(client,)).start()
+        threading.Thread(target=startListener, args=(client, mutex)).start()
 
         # Increment CURR_CLIENTS
         CURR_CLIENTS += 1
@@ -81,7 +81,7 @@ def saveboxColors(clr):
 def chooseWinner():
     return max(boxColors, key=boxColors.count)
 
-def startListener(client):
+def startListener(client, mutex):
     global SERVER, LISTENING, CURR_CLIENTS
     while LISTENING[client.fileno()]:
         # receive = client.recv(BUFFER).decode('utf-8')
@@ -113,7 +113,9 @@ def startListener(client):
             color = arg[3]
             row = int(y)
             col = int(x)
+            mutex.acquire()
             BOARD[row][col].lock()
+            mutex.release()
             BOARD[row][col].print()
             broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
@@ -123,7 +125,9 @@ def startListener(client):
             color = arg[3]
             row = int(y)
             col = int(x)
+            mutex.acquire()
             BOARD[row][col].unlock()
+            mutex.release()
             broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Server broadcasts to all clients that this box is permanently claimed by this player color
@@ -132,7 +136,9 @@ def startListener(client):
             color = arg[3]
             col = int(x)
             row = int(y)
+            mutex.acquire()
             BOARD[row][col].claim(color)
+            mutex.release()
             BOARD[row][col].print()
             broadcast(f"CLAIM {x} {y} {color}")
             saveboxColors(color)
