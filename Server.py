@@ -113,7 +113,7 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            mutex.acquire()
+            mutex.acquire(blocking=False)
             BOARD[row][col].lock()
             mutex.release()
             BOARD[row][col].print()
@@ -125,7 +125,7 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            mutex.acquire()
+            mutex.acquire(blocking=False)
             BOARD[row][col].unlock()
             mutex.release()
             broadcast(f"UNLOCK {x} {y} {color}")
@@ -136,7 +136,7 @@ def startListener(client, mutex):
             color = arg[3]
             col = int(x)
             row = int(y)
-            mutex.acquire()
+            mutex.acquire(blocking=False)
             BOARD[row][col].claim(color)
             mutex.release()
             BOARD[row][col].print()
