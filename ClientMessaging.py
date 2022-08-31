@@ -5,6 +5,8 @@ from tkinter import *
 import tkinter.font as font
 import math
 
+from Server import receiveMsg
+
 # Defaults
 SERVER_IP = socket.gethostname()
 PORT = 9999
@@ -23,7 +25,7 @@ class Client():
         self.SOCKET.connect((self.ip, self.port))
         print(f"[CONNECTED] to {self.ip}")
         # Receive color assigned by server
-        self.COLOR = self.SOCKET.recv(BUFFER).decode('utf-8')
+        self.COLOR = receiveMsg(self.SOCKET)
         # Start thread to listen for messages from server
         threading.Thread(target=self.startListener, args=()).start()
         threading.Thread(target=self.startInput, args=()).start()
@@ -53,8 +55,8 @@ class Client():
 
     def startListener(self):
         while self.LISTENING:
-            receive = self.SOCKET.recv(BUFFER).decode('utf-8')
-            arg = receive.split(' ')
+            receiveData = self.receiveMsg(self.SOCKET)
+            arg = receiveData.split(' ')
             if (arg[0] == "DISCONNECT" or arg[0] == "STOP"):
                 # Stop listener thread
                 print("Press enter again to stop...")
@@ -91,4 +93,20 @@ class Client():
                 self.LISTENING = False
                 break
             else:
-                print(receive)
+                print(receiveData)
+
+    def receiveMsg(self, client):
+        c = client.recv(1).decode('utf-8')
+        charStr = ""
+        while c != " ":
+            charStr += c
+            c = client.recv(1).decode('utf-8')
+        size = int(charStr)
+        data = ""
+        while len(data) < size:
+            receive = client.recv(size - len(data))
+            if not receive:
+                return None
+            data += receive.decode('utf-8')
+        print(data)
+        return data

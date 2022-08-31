@@ -61,7 +61,7 @@ def startServer(ip, port):
         color = COLORS.pop(0)
         PLAYER_COLOR[client.fileno()] = color
         msg = color
-        client.send(msg.encode('utf-8'))
+        sendMessage(msg, client)
 
         # Store reference to each client and whether they are listening
         CLIENTS[client.fileno()] = client
@@ -92,7 +92,7 @@ def startListener(client):
             # Stop server and disconnect all client
             msg = "STOP"
             LISTENING[client.fileno()] = False
-            client.send(msg.encode('utf-8'))
+            sendMessage(msg, client)
             for client in CLIENTS.values():
                 client.close()
             SERVER.close()
@@ -103,7 +103,7 @@ def startListener(client):
             CURR_CLIENTS -= 1
             COLORS.append(PLAYER_COLOR[client.fileno()])
             LISTENING[client.fileno()] = False
-            client.send(msg.encode('utf-8'))
+            sendMessage(msg, client)
             client.close()
             break
         elif (arg[0] == "LOCK"):
@@ -145,7 +145,7 @@ def startListener(client):
             msg = "END " + chooseWinner()
             LISTENING[client.fileno()] = False
             CURR_CLIENTS -= 1
-            client.send(msg.encode('utf-8'))
+            sendMessage(msg, client)
             client.close()
             break
     print(f"CC: {CURR_CLIENTS}")
@@ -155,7 +155,7 @@ def startListener(client):
 def broadcast(msg):
     # Broadcast message to all connected clients
     for client in CLIENTS.values():
-        client.send(msg.encode('utf-8'))
+        sendMessage(msg, client)
 
 def receiveMsg(client):
     c = client.recv(1).decode('utf-8')
@@ -173,10 +173,13 @@ def receiveMsg(client):
     print(data)
     return data
 
+def sendMessage(msgContent, client):
+        msgLen = len(msgContent)
+        msg = f'{msgLen} {msgContent}'
+        client.send(msg.encode('utf-8'))
 
 def createBoard():
     global BOARD
-
     # Create Box object for each square in game board and store reference in BOARD 2D array
     for y in range(BOARD_HEIGHT):
         row = []
