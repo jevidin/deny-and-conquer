@@ -137,7 +137,7 @@ class GamePage(Frame):
 
         def lockBox(col, row):
             # Send message to server to temporarily lock ownership of this box to this player
-            msg = f'LOCK {col} {row} {CLIENT.getColor()}'
+            msg= f'LOCK {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
 
         def unlockBox(col, row):

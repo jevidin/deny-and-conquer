@@ -28,7 +28,9 @@ class Client():
         threading.Thread(target=self.startListener, args=()).start()
         threading.Thread(target=self.startInput, args=()).start()
 
-    def sendMessage(self, msg):
+    def sendMessage(self, msgContent):
+        msgLen = len(msgContent)
+        msg = f'{msgLen} {msgContent}'
         self.SOCKET.send(msg.encode('utf-8'))
 
     def getColor(self):
@@ -36,8 +38,11 @@ class Client():
 
     def startInput(self):
         while self.LISTENING:
-            msg = input()
+            msgContent = input()
             if (self.LISTENING):
+                msgLen = len(msgContent)
+                msg = f'{msgLen} {msgContent}'
+                print(msg)
                 self.SOCKET.send(msg.encode('utf-8'))
 
     def setGameWindow(self, gameWindow):

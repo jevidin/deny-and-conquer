@@ -84,9 +84,10 @@ def chooseWinner():
 def startListener(client):
     global SERVER, LISTENING, CURR_CLIENTS
     while LISTENING[client.fileno()]:
-        receive = client.recv(BUFFER).decode('utf-8')
-        arg = receive.split(' ')
-
+        # receive = client.recv(BUFFER).decode('utf-8')
+        # arg = receive.split(' ')
+        receiveData = receiveMsg(client)
+        arg = receiveData.split(' ')
         if (arg[0] == "STOP"):
             # Stop server and disconnect all client
             msg = "STOP"
@@ -155,6 +156,23 @@ def broadcast(msg):
     # Broadcast message to all connected clients
     for client in CLIENTS.values():
         client.send(msg.encode('utf-8'))
+
+def receiveMsg(client):
+    c = client.recv(1).decode('utf-8')
+    charStr = ""
+    while c != " ":
+        charStr += c
+        c = client.recv(1).decode('utf-8')
+    size = int(charStr)
+    data = ""
+    while len(data) < size:
+        receive = client.recv(size - len(data))
+        if not receive:
+            return None
+        data += receive.decode('utf-8')
+    print(data)
+    return data
+
 
 def createBoard():
     global BOARD
