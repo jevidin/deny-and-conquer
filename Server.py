@@ -113,11 +113,11 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            mutex.acquire(blocking=False)
-            BOARD[row][col].lock()
-            mutex.release()
-            BOARD[row][col].print()
-            broadcast(f"LOCK {x} {y} {color}")
+            if mutex.acquire(blocking=False):
+                BOARD[row][col].lock()
+                BOARD[row][col].print()
+                mutex.release()
+                broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
             # Server broadcasts to all clients to unlock this box
             x = arg[1]
@@ -125,10 +125,10 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            mutex.acquire(blocking=False)
-            BOARD[row][col].unlock()
-            mutex.release()
-            broadcast(f"UNLOCK {x} {y} {color}")
+            if mutex.acquire(blocking=False):
+                BOARD[row][col].unlock()
+                mutex.release()
+                broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Server broadcasts to all clients that this box is permanently claimed by this player color
             x = arg[1]
@@ -136,12 +136,12 @@ def startListener(client, mutex):
             color = arg[3]
             col = int(x)
             row = int(y)
-            mutex.acquire(blocking=False)
-            BOARD[row][col].claim(color)
-            mutex.release()
-            BOARD[row][col].print()
-            broadcast(f"CLAIM {x} {y} {color}")
-            saveboxColors(color)
+            if mutex.acquire(blocking=False):
+                BOARD[row][col].claim(color)
+                mutex.release()
+                BOARD[row][col].print()
+                broadcast(f"CLAIM {x} {y} {color}")
+                saveboxColors(color)
         elif (arg[0] == "ENDPAGE"):
             # Server broadcasts to all clients the winning player's color
             msg = "ENDPAGE " + chooseWinner()
