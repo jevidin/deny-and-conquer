@@ -82,7 +82,7 @@ class GamePage(Frame):
 
         Frame.__init__(self, parent)
 
-        canvas = Canvas(self, background='yellow', width=1200, height=900)
+        canvas = Canvas(self, background='yellow', width=800, height=600)
         canvas.grid(row=0, column=0)
         WINDOW.update()
         col_width = canvas.winfo_width()/8
@@ -206,7 +206,7 @@ def startGUI():
     global END_WINDOW
 
     WINDOW = Tk()
-    WINDOW.geometry("1200x900")
+    WINDOW.geometry("800x600")
     WINDOW.rowconfigure(0, weight=1)
     WINDOW.columnconfigure(0, weight=1)
     WINDOW.resizable(False,False)
