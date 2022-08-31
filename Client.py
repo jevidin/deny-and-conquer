@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import tkinter.font as font
 import math
 import ClientMessaging
@@ -46,13 +47,22 @@ class HomePage(Frame):
         self.controller = controller
         label = Label(self, text="Deny and Conquer", font=("Helvetica", 50))
         label.pack()
+        input_ip = Text(self, height = 1, width = 30)
+        input_ip.insert("end-1c", "Input server IP")
+        input_ip.pack()
+        input_port = Text(self, height = 1, width = 30)
+        input_port.insert("end-1c", "Input server port")
+        input_port.pack()
         buttonFont = font.Font(family='Helvetica', size=16, weight='bold')
-        btn = Button(self, text="Start", font=buttonFont, height=5,
-                     width=15, command=lambda: controller.up_frame('GamePage'))
-        def connectToServer(event=None):
-            CLIENT.connect()
-        btn.bind('<Button-1>', connectToServer)
+        btn = Button(self, text="Start", font=buttonFont, height=5, width=15, command=lambda: self.connectButton(input_ip.get("1.0", "end-1c"), input_port.get("1.0", "end-1c")))
         btn.pack()
+
+    def connectButton(self, ip, port):
+        print(f"ip {ip} port {port}")
+        if CLIENT.connect(ip, port):
+            self.controller.up_frame('GamePage')
+        else:
+            messagebox.showerror("Invalid IP address", "Invalid IP address")
 
 class EndPage(Frame):
     def __init__(self, parent, controller):
@@ -215,12 +225,12 @@ def startGUI():
     GAME_WINDOW = main.get_frame("GamePage")
     END_WINDOW = main.get_frame("EndPage")
     
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', type=str, default=SERVER_IP)
-    parser.add_argument('--port', type=int, default=PORT)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--ip', type=str, default=SERVER_IP)
+    # parser.add_argument('--port', type=int, default=PORT)
+    # args = parser.parse_args()
 
-    CLIENT = ClientMessaging.Client(args.ip, args.port)
+    CLIENT = ClientMessaging.Client()
     CLIENT.setGameWindow(GAME_WINDOW)
     CLIENT.setEndWindow(END_WINDOW)
 
