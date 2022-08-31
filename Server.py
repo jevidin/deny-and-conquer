@@ -169,20 +169,6 @@ def createBoard():
 
     BOARD[0][0].print()
 
-def createBoard():
-    global BOARD
-
-    # Create Box object for each square in game board and store reference in BOARD 2D array
-    for y in range(BOARD_HEIGHT):
-        row = []
-        for x in range(BOARD_WIDTH):
-            newBox = Box()
-            row.append(newBox)
-        BOARD.append(row)
-
-    BOARD[0][0].print()
-
-
 def main():
     # Parse arguments
     # (usage example: Server.py --ip 192.168.0.1 --port 9999, type --help to show usage)
