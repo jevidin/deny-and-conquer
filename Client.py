@@ -195,8 +195,8 @@ class GamePage(Frame):
         col = int(col)
         row = int(row)
         lockedBoxes[row][col] = 1
-        self.mycanvas.create_text(col*self.myColWidth + 75, row*self.myRowHeight +
-                                  56, text="DRAWING...", fill=opponent_color, font=('Helvetica 15 bold'))
+        self.mycanvas.create_text(col*self.myColWidth + 50, row*self.myRowHeight +
+                                  37, text="DRAWING...", fill=opponent_color, font=('Helvetica 10 bold'))
 
     def unlockPlayersBox(self, col, row):
         col = int(col)

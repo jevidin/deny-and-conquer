@@ -33,6 +33,9 @@ class Box():
     def unlock(self):
         self.LOCKED = False
 
+    def get_locked(self):
+        return self.LOCKED
+
     def claim(self, color):
         self.CLAIMED_BY = color
 
@@ -113,7 +116,7 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            if mutex.acquire(blocking=False):
+            if mutex.acquire(blocking=False) and not BOARD[row][col].get_locked():
                 BOARD[row][col].lock()
                 BOARD[row][col].print()
                 mutex.release()
