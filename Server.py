@@ -40,7 +40,7 @@ class Box():
         self.CLAIMED_BY = color
 
     def print(self):
-        print(str(self.LOCKED) + "\n" + str(self.CLAIMED_BY))
+        print("LOCKED: " + str(self.LOCKED) + " CLAIMED BY: " + str(self.CLAIMED_BY))
 
 def startServer(ip, port):
     global SERVER, LISTENING, CURR_CLIENTS
@@ -118,7 +118,7 @@ def startListener(client, mutex):
             col = int(x)
             if mutex.acquire(blocking=False) and not BOARD[row][col].get_locked():
                 BOARD[row][col].lock()
-                BOARD[row][col].print()
+                print(f"SEND LOCK {x} {y} {color}")
                 mutex.release()
                 broadcast(f"LOCK {x} {y} {color}")
         elif (arg[0] == "UNLOCK"):
@@ -130,6 +130,7 @@ def startListener(client, mutex):
             col = int(x)
             if mutex.acquire(blocking=False):
                 BOARD[row][col].unlock()
+                print(f"SEND UNLOCK {x} {y} {color}")
                 mutex.release()
                 broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
@@ -141,8 +142,8 @@ def startListener(client, mutex):
             row = int(y)
             if mutex.acquire(blocking=False):
                 BOARD[row][col].claim(color)
+                print(f"SEND CLAIM {x} {y} {color}")
                 mutex.release()
-                BOARD[row][col].print()
                 broadcast(f"CLAIM {x} {y} {color}")
                 saveboxColors(color)
         elif (arg[0] == "ENDPAGE"):
@@ -179,7 +180,7 @@ def receiveMsg(client):
         if not receive:
             return None
         data += receive.decode('utf-8')
-    print(data)
+    # print(data)
     return data
 
 def sendMessage(msgContent, client):

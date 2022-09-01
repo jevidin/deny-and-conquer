@@ -139,7 +139,7 @@ class GamePage(Frame):
                 claimBox(col, row)
 
         def clearBox(event):
-            if boxAreas[currentBox[1]][currentBox[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 0:
+            if boxAreas[currentBox[1]][currentBox[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 1:
                 boxAreas[currentBox[1]][currentBox[0]] = 0
                 unlockBox(currentBox[0], currentBox[1])
                 self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (
@@ -188,6 +188,7 @@ class GamePage(Frame):
         col = int(col)
         row = int(row)
         boxAreas[row][col] = -1
+        print(f"CLAIM PLAYERS BOX {col} {row} {color}")
         self.mycanvas.create_rectangle(col*self.myColWidth, row*self.myRowHeight,
                                        (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill=str(color).lower())
 
@@ -195,6 +196,7 @@ class GamePage(Frame):
         col = int(col)
         row = int(row)
         lockedBoxes[row][col] = 1
+        print(f"LOCK PLAYERS BOX {col} {row} {opponent_color}")
         self.mycanvas.create_text(col*self.myColWidth + 50, row*self.myRowHeight +
                                   37, text="DRAWING...", fill=opponent_color, font=('Helvetica 10 bold'))
 
@@ -202,6 +204,7 @@ class GamePage(Frame):
         col = int(col)
         row = int(row)
         lockedBoxes[row][col] = 0
+        print(f"UNLOCK PLAYERS BOX {col} {row}")
         self.mycanvas.create_rectangle(col*self.myColWidth, row*self.myRowHeight,
                                        (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill='white')
         print("unlocking Boxes: ", col, row, lockedBoxes[row][col] == 0)
