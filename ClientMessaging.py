@@ -106,7 +106,7 @@ class Client():
                     self.GAME_WINDOW.bringUpEnd()
             elif (arg[0] == "END"):
                 # Receive message from server to print winner
-                print(f"[DISCONNECTED] Winner: {arg[1]}. Press any key to exit program.")
+                print(f"[DISCONNECTED] Winner: {arg[1]}. Press enter to exit program.")
                 self.LISTENING = False
                 break
             else:
