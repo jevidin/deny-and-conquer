@@ -33,11 +33,14 @@ class Box():
     def unlock(self):
         self.LOCKED = False
 
+    def get_locked(self):
+        return self.LOCKED
+
     def claim(self, color):
         self.CLAIMED_BY = color
 
     def print(self):
-        print(str(self.LOCKED) + "\n" + str(self.CLAIMED_BY))
+        print("LOCKED: " + str(self.LOCKED) + " CLAIMED BY: " + str(self.CLAIMED_BY))
 
 def startServer(ip, port):
     global SERVER, LISTENING, CURR_CLIENTS
@@ -47,7 +50,7 @@ def startServer(ip, port):
     SERVER.bind((ip, port))
     SERVER.listen(4)
     print(f"[SERVER LIVE] listening on {ip} and port {port}")
-
+    mutex = threading.Lock()
     while CURR_CLIENTS <= MAX_CLIENTS:
         try:
             # Blocking line for accepting client connection request
@@ -61,14 +64,14 @@ def startServer(ip, port):
         color = COLORS.pop(0)
         PLAYER_COLOR[client.fileno()] = color
         msg = color
-        client.send(msg.encode('utf-8'))
+        sendMessage(msg, client)
 
         # Store reference to each client and whether they are listening
         CLIENTS[client.fileno()] = client
         LISTENING[client.fileno()] = True
 
         # Have a listener for each client run on separate threads
-        threading.Thread(target=startListener, args=(client,)).start()
+        threading.Thread(target=startListener, args=(client, mutex)).start()
 
         # Increment CURR_CLIENTS
         CURR_CLIENTS += 1
@@ -81,17 +84,18 @@ def saveboxColors(clr):
 def chooseWinner():
     return max(boxColors, key=boxColors.count)
 
-def startListener(client):
+def startListener(client, mutex):
     global SERVER, LISTENING, CURR_CLIENTS
     while LISTENING[client.fileno()]:
-        receive = client.recv(BUFFER).decode('utf-8')
-        arg = receive.split(' ')
-
+        # receive = client.recv(BUFFER).decode('utf-8')
+        # arg = receive.split(' ')
+        receiveData = receiveMsg(client)
+        arg = receiveData.split(' ')
         if (arg[0] == "STOP"):
             # Stop server and disconnect all client
             msg = "STOP"
             LISTENING[client.fileno()] = False
-            client.send(msg.encode('utf-8'))
+            sendMessage(msg, client)
             for client in CLIENTS.values():
                 client.close()
             SERVER.close()
@@ -102,7 +106,7 @@ def startListener(client):
             CURR_CLIENTS -= 1
             COLORS.append(PLAYER_COLOR[client.fileno()])
             LISTENING[client.fileno()] = False
-            client.send(msg.encode('utf-8'))
+            sendMessage(msg, client)
             client.close()
             break
         elif (arg[0] == "LOCK"):
@@ -112,9 +116,11 @@ def startListener(client):
             color = arg[3]
             row = int(y)
             col = int(x)
-            BOARD[row][col].lock()
-            BOARD[row][col].print()
-            broadcast(f"LOCK {x} {y} {color}")
+            if mutex.acquire(blocking=False) and not BOARD[row][col].get_locked():
+                BOARD[row][col].lock()
+                print(f"SEND LOCK {x} {y} {color}")
+                broadcast(f"LOCK {x} {y} {color}")
+            mutex.release()
         elif (arg[0] == "UNLOCK"):
             # Server broadcasts to all clients to unlock this box
             x = arg[1]
@@ -122,8 +128,11 @@ def startListener(client):
             color = arg[3]
             row = int(y)
             col = int(x)
-            BOARD[row][col].unlock()
-            broadcast(f"UNLOCK {x} {y} {color}")
+            if mutex.acquire(blocking=False):
+                BOARD[row][col].unlock()
+                print(f"SEND UNLOCK {x} {y} {color}")
+                mutex.release()
+                broadcast(f"UNLOCK {x} {y} {color}")
         elif (arg[0] == "CLAIM"):
             # Server broadcasts to all clients that this box is permanently claimed by this player color
             x = arg[1]
@@ -131,10 +140,12 @@ def startListener(client):
             color = arg[3]
             col = int(x)
             row = int(y)
-            BOARD[row][col].claim(color)
-            BOARD[row][col].print()
-            broadcast(f"CLAIM {x} {y} {color}")
-            saveboxColors(color)
+            if mutex.acquire(blocking=False):
+                BOARD[row][col].claim(color)
+                print(f"SEND CLAIM {x} {y} {color}")
+                mutex.release()
+                broadcast(f"CLAIM {x} {y} {color}")
+                saveboxColors(color)
         elif (arg[0] == "ENDPAGE"):
             # Server broadcasts to all clients the winning player's color
             msg = "ENDPAGE " + chooseWinner()
@@ -144,7 +155,7 @@ def startListener(client):
             msg = "END " + chooseWinner()
             LISTENING[client.fileno()] = False
             CURR_CLIENTS -= 1
-            client.send(msg.encode('utf-8'))
+            sendMessage(msg, client)
             client.close()
             break
     print(f"CC: {CURR_CLIENTS}")
@@ -154,11 +165,31 @@ def startListener(client):
 def broadcast(msg):
     # Broadcast message to all connected clients
     for client in CLIENTS.values():
+        sendMessage(msg, client)
+
+def receiveMsg(client):
+    c = client.recv(1).decode('utf-8')
+    charStr = ""
+    while c != " ":
+        charStr += c
+        c = client.recv(1).decode('utf-8')
+    size = int(charStr)
+    data = ""
+    while len(data) < size:
+        receive = client.recv(size - len(data))
+        if not receive:
+            return None
+        data += receive.decode('utf-8')
+    # print(data)
+    return data
+
+def sendMessage(msgContent, client):
+        msgLen = len(msgContent)
+        msg = f'{msgLen} {msgContent}'
         client.send(msg.encode('utf-8'))
 
 def createBoard():
     global BOARD
-
     # Create Box object for each square in game board and store reference in BOARD 2D array
     for y in range(BOARD_HEIGHT):
         row = []
@@ -168,20 +199,6 @@ def createBoard():
         BOARD.append(row)
 
     BOARD[0][0].print()
-
-def createBoard():
-    global BOARD
-
-    # Create Box object for each square in game board and store reference in BOARD 2D array
-    for y in range(BOARD_HEIGHT):
-        row = []
-        for x in range(BOARD_WIDTH):
-            newBox = Box()
-            row.append(newBox)
-        BOARD.append(row)
-
-    BOARD[0][0].print()
-
 
 def main():
     # Parse arguments

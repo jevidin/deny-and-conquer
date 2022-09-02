@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import tkinter.font as font
 import math
 import ClientMessaging
@@ -46,13 +47,22 @@ class HomePage(Frame):
         self.controller = controller
         label = Label(self, text="Deny and Conquer", font=("Helvetica", 50))
         label.pack()
+        input_ip = Text(self, height = 1, width = 30)
+        input_ip.insert("end-1c", "Input server IP")
+        input_ip.pack()
+        input_port = Text(self, height = 1, width = 30)
+        input_port.insert("end-1c", "Input server port")
+        input_port.pack()
         buttonFont = font.Font(family='Helvetica', size=16, weight='bold')
-        btn = Button(self, text="Start", font=buttonFont, height=5,
-                     width=15, command=lambda: controller.up_frame('GamePage'))
-        def connectToServer(event=None):
-            CLIENT.connect()
-        btn.bind('<Button-1>', connectToServer)
+        btn = Button(self, text="Start", font=buttonFont, height=5, width=15, command=lambda: self.connectButton(input_ip.get("1.0", "end-1c"), input_port.get("1.0", "end-1c")))
         btn.pack()
+
+    def connectButton(self, ip, port):
+        print(f"ip {ip} port {port}")
+        if CLIENT.connect(ip, port):
+            self.controller.up_frame('GamePage')
+        else:
+            messagebox.showerror("Invalid IP address", "Invalid IP address")
 
 class EndPage(Frame):
     def __init__(self, parent, controller):
@@ -82,7 +92,7 @@ class GamePage(Frame):
 
         Frame.__init__(self, parent)
 
-        canvas = Canvas(self, background='yellow', width=1200, height=900)
+        canvas = Canvas(self, background='yellow', width=800, height=600)
         canvas.grid(row=0, column=0)
         WINDOW.update()
         col_width = canvas.winfo_width()/8
@@ -137,7 +147,7 @@ class GamePage(Frame):
 
         def lockBox(col, row):
             # Send message to server to temporarily lock ownership of this box to this player
-            msg = f'LOCK {col} {row} {CLIENT.getColor()}'
+            msg= f'LOCK {col} {row} {CLIENT.getColor()}'
             CLIENT.sendMessage(msg)
 
         def unlockBox(col, row):
@@ -178,6 +188,7 @@ class GamePage(Frame):
         col = int(col)
         row = int(row)
         boxAreas[row][col] = -1
+        print(f"CLAIM PLAYERS BOX {col} {row} {color}")
         self.mycanvas.create_rectangle(col*self.myColWidth, row*self.myRowHeight,
                                        (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill=str(color).lower())
 
@@ -185,13 +196,15 @@ class GamePage(Frame):
         col = int(col)
         row = int(row)
         lockedBoxes[row][col] = 1
-        self.mycanvas.create_text(col*self.myColWidth + 75, row*self.myRowHeight +
-                                  56, text="DRAWING...", fill=opponent_color, font=('Helvetica 15 bold'))
+        print(f"LOCK PLAYERS BOX {col} {row} {opponent_color}")
+        self.mycanvas.create_text(col*self.myColWidth + 50, row*self.myRowHeight +
+                                  37, text="DRAWING...", fill=opponent_color, font=('Helvetica 10 bold'))
 
     def unlockPlayersBox(self, col, row):
         col = int(col)
         row = int(row)
         lockedBoxes[row][col] = 0
+        print(f"UNLOCK PLAYERS BOX {col} {row}")
         self.mycanvas.create_rectangle(col*self.myColWidth, row*self.myRowHeight,
                                        (col+1)*self.myColWidth, (row+1)*self.myRowHeight, fill='white')
         print("unlocking Boxes: ", col, row, lockedBoxes[row][col] == 0)
@@ -206,7 +219,7 @@ def startGUI():
     global END_WINDOW
 
     WINDOW = Tk()
-    WINDOW.geometry("1200x900")
+    WINDOW.geometry("800x600")
     WINDOW.rowconfigure(0, weight=1)
     WINDOW.columnconfigure(0, weight=1)
     WINDOW.resizable(False,False)
@@ -215,12 +228,12 @@ def startGUI():
     GAME_WINDOW = main.get_frame("GamePage")
     END_WINDOW = main.get_frame("EndPage")
     
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ip', type=str, default=SERVER_IP)
-    parser.add_argument('--port', type=int, default=PORT)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--ip', type=str, default=SERVER_IP)
+    # parser.add_argument('--port', type=int, default=PORT)
+    # args = parser.parse_args()
 
-    CLIENT = ClientMessaging.Client(args.ip, args.port)
+    CLIENT = ClientMessaging.Client()
     CLIENT.setGameWindow(GAME_WINDOW)
     CLIENT.setEndWindow(END_WINDOW)
 

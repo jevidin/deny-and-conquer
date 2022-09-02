@@ -1,9 +1,11 @@
 import socket
 import threading
-
+import ipaddress
 from tkinter import *
 import tkinter.font as font
 import math
+
+from Server import SERVER, receiveMsg
 
 # Defaults
 SERVER_IP = socket.gethostname()
@@ -12,23 +14,43 @@ BUFFER = 128
 SOCKET = None
 
 class Client():
-    def __init__(self, ip, port):
-        self.ip = ip
-        self.port = port
+    # def __init__(self, ip, port):
+    #     self.ip = ip
+    #     self.port = port
 
-    def connect(self):
+    def connect(self, ip, port):
         self.LISTENING = True
         # Create TCP socket and connect to server with IP and PORT
         self.SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.SOCKET.connect((self.ip, self.port))
-        print(f"[CONNECTED] to {self.ip}")
-        # Receive color assigned by server
-        self.COLOR = self.SOCKET.recv(BUFFER).decode('utf-8')
-        # Start thread to listen for messages from server
-        threading.Thread(target=self.startListener, args=()).start()
-        threading.Thread(target=self.startInput, args=()).start()
+        if len(ip) == 0:
+            ip = SERVER_IP
+            self.SOCKET.connect((SERVER_IP, int(port)))
+            print(f"[CONNECTED] to {SERVER_IP}")
+            # Receive color assigned by server
+            self.COLOR = receiveMsg(self.SOCKET)
+            # Start thread to listen for messages from server
+            threading.Thread(target=self.startListener, args=()).start()
+            threading.Thread(target=self.startInput, args=()).start()
+            return True
+        else:
+            try:
+                ipAddress = ipaddress.ip_address(ip)
+                self.SOCKET.connect((ip, int(port)))
+                print(f"[CONNECTED] to {ip}")
+                # Receive color assigned by server
+                self.COLOR = receiveMsg(self.SOCKET)
+                # Start thread to listen for messages from server
+                threading.Thread(target=self.startListener, args=()).start()
+                threading.Thread(target=self.startInput, args=()).start()
+                ret = True
+            except ValueError:
+                print("IP address {} is not valid".format(ip)) 
+                ret = False
+            return ret
 
-    def sendMessage(self, msg):
+    def sendMessage(self, msgContent):
+        msgLen = len(msgContent)
+        msg = f'{msgLen} {msgContent}'
         self.SOCKET.send(msg.encode('utf-8'))
 
     def getColor(self):
@@ -36,8 +58,10 @@ class Client():
 
     def startInput(self):
         while self.LISTENING:
-            msg = input()
+            msgContent = input()
             if (self.LISTENING):
+                msgLen = len(msgContent)
+                msg = f'{msgLen} {msgContent}'
                 self.SOCKET.send(msg.encode('utf-8'))
 
     def setGameWindow(self, gameWindow):
@@ -48,8 +72,8 @@ class Client():
 
     def startListener(self):
         while self.LISTENING:
-            receive = self.SOCKET.recv(BUFFER).decode('utf-8')
-            arg = receive.split(' ')
+            receiveData = self.receiveMsg(self.SOCKET)
+            arg = receiveData.split(' ')
             if (arg[0] == "DISCONNECT" or arg[0] == "STOP"):
                 # Stop listener thread
                 print("Press enter again to stop...")
@@ -86,4 +110,19 @@ class Client():
                 self.LISTENING = False
                 break
             else:
-                print(receive)
+                print(receiveData)
+
+    def receiveMsg(self, client):
+        c = client.recv(1).decode('utf-8')
+        charStr = ""
+        while c != " ":
+            charStr += c
+            c = client.recv(1).decode('utf-8')
+        size = int(charStr)
+        data = ""
+        while len(data) < size:
+            receive = client.recv(size - len(data))
+            if not receive:
+                return None
+            data += receive.decode('utf-8')
+        return data
