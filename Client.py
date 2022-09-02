@@ -139,7 +139,7 @@ class GamePage(Frame):
                 claimBox(col, row)
 
         def clearBox(event):
-            if boxAreas[currentBox[1]][currentBox[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 1:
+            if boxAreas[currentBox[1]][currentBox[0]] >= 0 and lockedBoxes[currentBox[1]][currentBox[0]] == 0:
                 boxAreas[currentBox[1]][currentBox[0]] = 0
                 unlockBox(currentBox[0], currentBox[1])
                 self.mycanvas.create_rectangle(currentBox[0]*col_width, currentBox[1]*row_height, (

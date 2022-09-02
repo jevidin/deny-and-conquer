@@ -119,8 +119,8 @@ def startListener(client, mutex):
             if mutex.acquire(blocking=False) and not BOARD[row][col].get_locked():
                 BOARD[row][col].lock()
                 print(f"SEND LOCK {x} {y} {color}")
-                mutex.release()
                 broadcast(f"LOCK {x} {y} {color}")
+            mutex.release()
         elif (arg[0] == "UNLOCK"):
             # Server broadcasts to all clients to unlock this box
             x = arg[1]
