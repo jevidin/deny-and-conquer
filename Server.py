@@ -133,10 +133,10 @@ def startListener(client, mutex):
             row = int(y)
             col = int(x)
             mutex.acquire()
-            if BOARD[row][col].get_locked():
-                BOARD[row][col].unlock()
-                print(f"SEND UNLOCK {x} {y} {color}")
-                broadcast(f"UNLOCK {x} {y} {color}")
+            # if BOARD[row][col].get_locked():
+            BOARD[row][col].unlock()
+            print(f"SEND UNLOCK {x} {y} {color}")
+            broadcast(f"UNLOCK {x} {y} {color}")
             mutex.release()
         elif (arg[0] == "CLAIM"):
             # Server broadcasts to all clients that this box is permanently claimed by this player color
@@ -146,7 +146,7 @@ def startListener(client, mutex):
             col = int(x)
             row = int(y)
             mutex.acquire()
-            if BOARD[row][col].get_claimed == None:
+            if BOARD[row][col].get_claimed() is None:
                 BOARD[row][col].claim(color)
                 print(f"SEND CLAIM {x} {y} {color}")
                 broadcast(f"CLAIM {x} {y} {color}")

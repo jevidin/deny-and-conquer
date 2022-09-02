@@ -90,6 +90,7 @@ class Client():
                 # Receive message from server to unlock square at (x,y)
                 x = arg[1]
                 y = arg[2]
+                color = arg[3]
                 if (color != self.COLOR):
                     self.GAME_WINDOW.unlockPlayersBox(x, y)
             elif (arg[0] == "CLAIM"):
@@ -102,8 +103,8 @@ class Client():
                 # Receive message from server to display winner
                 self.END_WINDOW.winUpdate(arg[1])
                 # Receive message from server to bring up end screen
-                if (color != self.COLOR):
-                    self.GAME_WINDOW.bringUpEnd()
+                # if (color != self.COLOR):
+                self.GAME_WINDOW.bringUpEnd()
             elif (arg[0] == "END"):
                 # Receive message from server to print winner
                 print(f"[DISCONNECTED] Winner: {arg[1]}. Press enter to exit program.")
