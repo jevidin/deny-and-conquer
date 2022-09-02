@@ -116,7 +116,8 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            if mutex.acquire(blocking=False) and not BOARD[row][col].get_locked():
+            mutex.acquire()
+            if BOARD[row][col].get_locked():
                 BOARD[row][col].lock()
                 print(f"SEND LOCK {x} {y} {color}")
                 broadcast(f"LOCK {x} {y} {color}")
@@ -128,10 +129,10 @@ def startListener(client, mutex):
             color = arg[3]
             row = int(y)
             col = int(x)
-            if mutex.acquire(blocking=False):
-                BOARD[row][col].unlock()
-                print(f"SEND UNLOCK {x} {y} {color}")
-                broadcast(f"UNLOCK {x} {y} {color}")
+            mutex.acquire()
+            BOARD[row][col].unlock()
+            print(f"SEND UNLOCK {x} {y} {color}")
+            broadcast(f"UNLOCK {x} {y} {color}")
             mutex.release()
         elif (arg[0] == "CLAIM"):
             # Server broadcasts to all clients that this box is permanently claimed by this player color
@@ -140,11 +141,11 @@ def startListener(client, mutex):
             color = arg[3]
             col = int(x)
             row = int(y)
-            if mutex.acquire(blocking=False):
-                BOARD[row][col].claim(color)
-                print(f"SEND CLAIM {x} {y} {color}")
-                broadcast(f"CLAIM {x} {y} {color}")
-                saveboxColors(color)
+            mutex.acquire()
+            BOARD[row][col].claim(color)
+            print(f"SEND CLAIM {x} {y} {color}")
+            broadcast(f"CLAIM {x} {y} {color}")
+            saveboxColors(color)
             mutex.release()
         elif (arg[0] == "ENDPAGE"):
             # Server broadcasts to all clients the winning player's color
