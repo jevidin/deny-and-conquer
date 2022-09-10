@@ -5,8 +5,6 @@ from tkinter import *
 import tkinter.font as font
 import math
 
-from Server import SERVER, receiveMsg
-
 # Defaults
 SERVER_IP = socket.gethostname()
 PORT = 9999
@@ -27,7 +25,7 @@ class Client():
             self.SOCKET.connect((SERVER_IP, int(port)))
             print(f"[CONNECTED] to {SERVER_IP}")
             # Receive color assigned by server
-            self.COLOR = receiveMsg(self.SOCKET)
+            self.COLOR = self.receiveMsg(self.SOCKET)
             # Start thread to listen for messages from server
             threading.Thread(target=self.startListener, args=()).start()
             threading.Thread(target=self.startInput, args=()).start()
@@ -38,7 +36,7 @@ class Client():
                 self.SOCKET.connect((ip, int(port)))
                 print(f"[CONNECTED] to {ip}")
                 # Receive color assigned by server
-                self.COLOR = receiveMsg(self.SOCKET)
+                self.COLOR = self.receiveMsg(self.SOCKET)
                 # Start thread to listen for messages from server
                 threading.Thread(target=self.startListener, args=()).start()
                 threading.Thread(target=self.startInput, args=()).start()
