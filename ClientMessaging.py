@@ -3,7 +3,6 @@ import threading
 import ipaddress
 from tkinter import *
 import tkinter.font as font
-import math
 
 # Defaults
 SERVER_IP = socket.gethostname()
@@ -12,9 +11,6 @@ BUFFER = 128
 SOCKET = None
 
 class Client():
-    # def __init__(self, ip, port):
-    #     self.ip = ip
-    #     self.port = port
 
     def connect(self, ip, port):
         self.LISTENING = True
@@ -32,7 +28,6 @@ class Client():
             return True
         else:
             try:
-                ipAddress = ipaddress.ip_address(ip)
                 self.SOCKET.connect((ip, int(port)))
                 print(f"[CONNECTED] to {ip}")
                 # Receive color assigned by server

@@ -3,7 +3,6 @@ from tkinter import messagebox
 import tkinter.font as font
 import math
 import ClientMessaging
-import argparse
 import socket
 
 SERVER_IP = socket.gethostname()
